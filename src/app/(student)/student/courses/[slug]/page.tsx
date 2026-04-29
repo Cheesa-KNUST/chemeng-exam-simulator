@@ -45,7 +45,7 @@ export default function CourseDetailPage() {
 
             <div className="mt-3 text-sm text-slate-400 space-y-1">
               <p>Duration: {exam.duration} mins</p>
-              <p>Questions: {exam.questions}</p>
+              <p>Questions: {exam.questions.length}</p>
               <p>Type: {exam.type}</p>
               <p>Difficulty: {exam.difficulty}</p>
             </div>
