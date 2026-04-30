@@ -61,7 +61,7 @@ export default function CourseDetailPage() {
 
       {courseExams.length === 0 && (
         <p className="text-slate-500 mt-6">
-          No exams available for this course yet.
+          No exams available for this course yet. Check back later
         </p>
       )}
     </AppShell>
