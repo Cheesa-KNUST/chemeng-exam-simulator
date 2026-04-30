@@ -8,22 +8,18 @@ import PageHeader from "@/components/layout/PageHeader";
 import Image from "next/image";
 
 import { upsertUserProfile, getUserProfile } from "@/context/userService";
-
 import { useAuth } from "@/context/AuthContext";
 
 function useToast() {
-  const toast = (msg: string) => {
+  const toast = (msg: string, success = true) => {
     const el = document.createElement("div");
-
     el.innerText = msg;
-    el.className =
-      "fixed bottom-5 right-5 bg-slate-800 text-white px-4 py-2 rounded-lg shadow-lg z-50";
-
+    el.className = `fixed bottom-5 right-5 px-4 py-2 rounded-lg shadow-lg z-50 text-sm font-medium text-white ${
+      success ? "bg-emerald-600" : "bg-red-600"
+    }`;
     document.body.appendChild(el);
-
     setTimeout(() => el.remove(), 2500);
   };
-
   return { toast };
 }
 
@@ -40,7 +36,6 @@ export default function ProfileSettingsPage() {
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(false);
-
   const [original, setOriginal] = useState<Profile>({
     username: "",
     email: "",
@@ -57,10 +52,8 @@ export default function ProfileSettingsPage() {
 
   useEffect(() => {
     if (!user) return;
-
     const unsub = getUserProfile(user.uid, (data) => {
       if (!data) return;
-
       const profile: Profile = {
         username: data.username || "",
         email: data.email || "",
@@ -68,28 +61,25 @@ export default function ProfileSettingsPage() {
         program: data.program || "",
         semester: data.semester || "",
       };
-
       setOriginal(profile);
-
       setUsername(profile.username);
       setEmail(profile.email);
       setLevel(profile.level);
       setProgram(profile.program);
       setSemester(profile.semester);
     });
-
     return () => unsub();
   }, [user]);
 
-  const isDirty = useMemo(() => {
-    return (
+  const isDirty = useMemo(
+    () =>
       username !== original.username ||
       email !== original.email ||
       level !== original.level ||
       program !== original.program ||
-      semester !== original.semester
-    );
-  }, [username, email, level, program, semester, original]);
+      semester !== original.semester,
+    [username, email, level, program, semester, original],
+  );
 
   const handleCancel = () => {
     setUsername(original.username);
@@ -100,10 +90,8 @@ export default function ProfileSettingsPage() {
 
   const handleSave = async () => {
     if (!user) return;
-
     try {
       setLoading(true);
-
       await upsertUserProfile({
         uid: user.uid,
         email: user.email,
@@ -112,19 +100,16 @@ export default function ProfileSettingsPage() {
         program,
         semester,
       });
-
-      toast("Profile updated successfully");
+      toast("Profile updated successfully", true);
     } catch {
-      toast("Failed to update profile");
+      toast("Failed to update profile", false);
     } finally {
       setLoading(false);
     }
   };
 
   const avatarUrl = username
-    ? `https://ui-avatars.com/api/?name=${encodeURIComponent(
-        username,
-      )}&background=3b82f6&color=fff&size=256`
+    ? `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=3b82f6&color=fff&size=256`
     : `https://ui-avatars.com/api/?name=User&background=1e293b&color=94a3b8&size=256`;
 
   return (
@@ -135,45 +120,46 @@ export default function ProfileSettingsPage() {
           subtitle="Manage your account settings and academic profile."
         />
 
-        <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-8 shadow-2xl">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 pb-8 mb-8 border-b border-slate-800/80">
-            <div className="h-28 w-28 rounded-full overflow-hidden border-4 border-slate-800 bg-slate-800 shrink-0">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-6 md:p-8 shadow-sm">
+          {/* Avatar section */}
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 pb-8 mb-8 border-b border-slate-100 dark:border-slate-700">
+            <div className="h-24 w-24 rounded-full overflow-hidden border-4 border-slate-100 dark:border-slate-700 bg-slate-100 dark:bg-slate-700 shrink-0">
               <Image
                 src={avatarUrl}
                 alt="Profile Avatar"
-                width={112}
-                height={112}
+                width={96}
+                height={96}
                 unoptimized
                 className="object-cover w-full h-full"
               />
             </div>
 
-            <div className="pt-2 text-center sm:text-left">
-              <h3 className="text-white font-semibold text-lg">
+            <div className="pt-1 text-center sm:text-left">
+              <h3 className="text-slate-800 dark:text-slate-100 font-semibold text-base">
                 Profile Picture
               </h3>
-
-              <p className="text-slate-400 text-sm mt-1 max-w-sm">
+              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 max-w-sm">
                 Avatar updates automatically from your username.
               </p>
             </div>
           </div>
 
+          {/* Form section */}
           <div>
             <div className="mb-6">
-              <h2 className="text-white font-semibold text-xl">
+              <h2 className="text-slate-800 dark:text-slate-100 font-semibold text-lg">
                 Personal Information
               </h2>
-
-              <p className="text-slate-400 text-sm mt-1">
+              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
                 Update your academic profile and identity.
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
               <div className="space-y-2">
-                <label className="text-sm text-slate-300">Username</label>
-
+                <label className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                  Username
+                </label>
                 <Input
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
@@ -182,16 +168,20 @@ export default function ProfileSettingsPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm text-slate-300">Email</label>
-
-                <Input value={email} disabled />
+                <label className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                  Email
+                </label>
+                <Input
+                  value={email}
+                  disabled
+                  className="opacity-60 cursor-not-allowed"
+                />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm text-slate-300">
+                <label className="text-sm font-medium text-slate-600 dark:text-slate-300">
                   Academic Program
                 </label>
-
                 <Input
                   value={program}
                   onChange={(e) => setProgram(e.target.value)}
@@ -200,8 +190,9 @@ export default function ProfileSettingsPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm text-slate-300">Current Level</label>
-
+                <label className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                  Current Level
+                </label>
                 <Input
                   value={level}
                   onChange={(e) => setLevel(e.target.value)}
@@ -210,8 +201,9 @@ export default function ProfileSettingsPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm text-slate-300">Semester</label>
-
+                <label className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                  Semester
+                </label>
                 <Input
                   value={semester}
                   onChange={(e) => setSemester(e.target.value)}
@@ -221,11 +213,10 @@ export default function ProfileSettingsPage() {
             </div>
 
             {isDirty && (
-              <div className="flex justify-end gap-4 mt-10 pt-6 border-t border-slate-800/80">
+              <div className="flex justify-end gap-3 mt-10 pt-6 border-t border-slate-100 dark:border-slate-700">
                 <Button variant="secondary" onClick={handleCancel}>
                   Cancel
                 </Button>
-
                 <Button
                   variant="primary"
                   onClick={handleSave}

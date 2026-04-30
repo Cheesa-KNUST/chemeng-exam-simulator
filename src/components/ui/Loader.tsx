@@ -18,15 +18,19 @@ export default function Loader({
   const spinner = (
     <div className="flex flex-col items-center gap-3">
       <div
-        className={`${sizes[size]} rounded-full border-slate-200 border-t-blue-600 animate-spin`}
+        className={`${sizes[size]} rounded-full border-slate-200 dark:border-slate-700 border-t-blue-600 dark:border-t-blue-400 animate-spin`}
       />
-      {label && <p className="text-sm text-slate-500 animate-pulse">{label}</p>}
+      {label && (
+        <p className="text-sm text-slate-500 dark:text-slate-400 animate-pulse">
+          {label}
+        </p>
+      )}
     </div>
   );
 
   if (fullPage) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/70 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/70 dark:bg-slate-900/70 backdrop-blur-sm">
         {spinner}
       </div>
     );

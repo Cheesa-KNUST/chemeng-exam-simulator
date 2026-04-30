@@ -7,6 +7,10 @@ import {
   onSnapshot,
   Unsubscribe,
   updateDoc,
+  Timestamp,
+  where,
+  deleteDoc,
+  getDocs,
 } from "firebase/firestore";
 
 import { db } from "@/lib/firebase";
@@ -33,7 +37,7 @@ export type Notification = {
   message: string;
   type: "success" | "info" | "warning";
   read: boolean;
-  createdAt?: any;
+  createdAt?: Timestamp | null;
 };
 
 export async function upsertUserProfile(user: UserProfile) {
@@ -105,4 +109,18 @@ export function listenToUserSettings(
       },
     );
   });
+}
+
+export async function resetUserExams(userId: string) {
+  if (!userId) throw new Error("Missing userId");
+
+  const q = query(collection(db, "examResults"), where("userId", "==", userId));
+
+  const snapshot = await getDocs(q);
+
+  const deletes = snapshot.docs.map((d) =>
+    deleteDoc(doc(db, "examResults", d.id)),
+  );
+
+  await Promise.all(deletes);
 }

@@ -13,7 +13,7 @@ export default function AppShell({ children }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="flex bg-slate-100 min-h-screen">
+    <div className="flex bg-slate-100 dark:bg-slate-900 min-h-screen">
       <div className="hidden lg:block h-screen sticky top-0">
         <Sidebar />
       </div>

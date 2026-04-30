@@ -74,8 +74,8 @@ export default function SignupPage() {
 
             <Button
               variant="primary"
-              fullWidth
               onClick={handleSignup}
+              className="w-full"
               disabled={loading}
             >
               {loading ? "Creating account..." : "Sign Up"}
@@ -91,9 +91,9 @@ export default function SignupPage() {
 
             <Button
               variant="secondary"
-              fullWidth
               onClick={handleGoogle}
               disabled={loading}
+              className="w-full"
             >
               Continue with Google
             </Button>

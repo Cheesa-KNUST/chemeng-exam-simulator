@@ -8,7 +8,7 @@ type Trend = {
 
 type Props = {
   title: string;
-  value: string;
+  value: string | number;
   icon?: ReactNode;
   trend?: Trend;
   accent?: string;
@@ -23,19 +23,21 @@ export default function StatCard({
 }: Props) {
   return (
     <Card className="relative overflow-hidden">
-      <div className={`absolute top-0 left-0 w-full h-1 ${accent}`} />
+      <div className={`absolute bottom-0 left-0 w-full h-1 ${accent}`} />
 
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between pt-1">
         <div>
-          <p className="text-sm text-slate-500">{title}</p>
-          <h3 className="text-3xl font-bold mt-1 text-slate-800 tracking-tight">
+          <p className="text-sm text-slate-500 dark:text-slate-400">{title}</p>
+          <h3 className="text-3xl font-bold mt-1 text-slate-800 dark:text-slate-100 tracking-tight">
             {value}
           </h3>
 
           {trend && (
             <p
               className={`text-xs mt-2 font-medium flex items-center gap-1 ${
-                trend.positive ? "text-emerald-600" : "text-red-500"
+                trend.positive
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-red-500 dark:text-red-400"
               }`}
             >
               <span>{trend.positive ? "↑" : "↓"}</span>
@@ -45,9 +47,7 @@ export default function StatCard({
         </div>
 
         {icon && (
-          <div
-            className={`p-2.5 rounded-xl ${accent} bg-opacity-10 text-slate-600`}
-          >
+          <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">
             {icon}
           </div>
         )}

@@ -76,9 +76,9 @@ export default function LoginPage() {
 
             <Button
               variant="primary"
-              fullWidth
               onClick={handleLogin}
               disabled={loading}
+              className="w-full"
             >
               {loading ? "Signing in..." : "Login"}
             </Button>
@@ -93,9 +93,9 @@ export default function LoginPage() {
 
             <Button
               variant="secondary"
-              fullWidth
               onClick={handleGoogle}
               disabled={loading}
+              className="w-full"
             >
               Continue with Google
             </Button>

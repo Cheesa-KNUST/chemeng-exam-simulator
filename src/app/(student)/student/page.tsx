@@ -1,30 +1,34 @@
 "use client";
-import Link from "next/link";
 
-import { useEffect, useState } from "react";
 import AppShell from "@/components/layout/AppShell";
 import PageHeader from "@/components/layout/PageHeader";
-import StatCard from "@/components/ui/StatCard";
 import SectionTitle from "@/components/ui/SectionTitle";
 import Button from "@/components/ui/Button";
+import Link from "next/link";
 
-import { BookOpen, ClipboardCheck, BarChart3 } from "lucide-react";
+import { useDashboardData } from "@/app/(student)/features/useDashboardData";
 
-import { useAuth } from "@/context/AuthContext";
-import { getUserProfile, UserProfile } from "@/context/userService";
+import StatsSection from "@/app/(student)/features/StatsSection";
+import RecentExamsSection from "@/app/(student)/features/RecentExamsSection";
+
+import PerformanceChart from "@/components/charts/PerformanceChart";
+import ScoreDistributionChart from "@/components/charts/ScoreDistributionChart";
+import ActivityChart from "@/components/charts/ActivityChart";
+
+import Skeleton from "@/components/ui/Skeleton";
 
 export default function HomePage() {
-  const { user } = useAuth();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-
-  useEffect(() => {
-    if (!user) return;
-
-    const unsub = getUserProfile(user.uid, setProfile);
-    return () => unsub();
-  }, [user]);
-
-  const username = profile?.username || "Student";
+  const {
+    username,
+    loading,
+    error,
+    stats,
+    performance,
+    distribution,
+    activity,
+    trends,
+    data,
+  } = useDashboardData();
 
   return (
     <AppShell>
@@ -38,36 +42,55 @@ export default function HomePage() {
         }
       />
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-        <StatCard
-          title="Available Courses"
-          value="8"
-          accent="bg-blue-500"
-          trend={{ value: "+2", positive: true }}
-          icon={<BookOpen size={20} strokeWidth={1.8} />}
-        />
+      <SectionTitle
+        title="Performance Health"
+        description="Core indicators of your academic progress and consistency"
+      />
 
-        <StatCard
-          title="Completed Exams"
-          value="14"
-          accent="bg-emerald-500"
-          trend={{ value: "3 this week", positive: true }}
-          icon={<ClipboardCheck size={20} strokeWidth={1.8} />}
-        />
-
-        <StatCard
-          title="Average Score"
-          value="72%"
-          accent="bg-amber-400"
-          trend={{ value: "5%", positive: false }}
-          icon={<BarChart3 size={20} strokeWidth={1.8} />}
-        />
-      </div>
+      <StatsSection loading={loading} stats={stats} trends={trends} />
 
       <SectionTitle
-        title="Recent Activity"
-        description="Your last exam attempts and scores"
+        title="Performance Insights"
+        description="How your scores are trending across recent assessments"
       />
+
+      {loading ? (
+        <div className="grid lg:grid-cols-2 gap-5 mb-6">
+          <Skeleton className="h-72" />
+          <Skeleton className="h-72" />
+        </div>
+      ) : (
+        <div className="grid lg:grid-cols-2 gap-5 mb-6">
+          <PerformanceChart data={performance} />
+          <ScoreDistributionChart data={distribution} />
+        </div>
+      )}
+
+      <SectionTitle
+        title="Study Activity"
+        description="Your weekly engagement and exam participation patterns"
+      />
+
+      {loading ? (
+        <Skeleton className="h-72 mb-6" />
+      ) : (
+        <div className="mb-6">
+          <ActivityChart data={activity} />
+        </div>
+      )}
+
+      <SectionTitle
+        title="Performance Breakdown"
+        description="Detailed analysis of your strengths and areas for improvement"
+      />
+
+      <RecentExamsSection data={data} />
+
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl p-4 text-sm font-medium mt-4">
+          {error}
+        </div>
+      )}
     </AppShell>
   );
 }

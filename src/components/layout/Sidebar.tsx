@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { studentNavItems } from "./navItems";
+import { topNavItems, bottomNavItems } from "./navItems";
 import { X, LogOut } from "lucide-react";
 
 import { logoutUser } from "@/context/authService";
@@ -28,16 +28,10 @@ export default function Sidebar({ onClose }: SidebarProps) {
 
   useEffect(() => {
     if (!user) return;
-
     const unsubscribe = getUserProfile(user.uid, (data: UserProfile | null) => {
       if (!data) return;
-
-      setProfile({
-        username: data.username,
-        program: data.program,
-      });
+      setProfile({ username: data.username, program: data.program });
     });
-
     return () => unsubscribe();
   }, [user]);
 
@@ -57,35 +51,37 @@ export default function Sidebar({ onClose }: SidebarProps) {
 
   const fullName = profile.username || "Student";
   const nameParts = fullName.trim().split(" ").filter(Boolean);
-
   const displayName =
-    nameParts.length >= 2 ? `${nameParts[0]} ${nameParts[1]}` : fullName;
-
+    nameParts.length >= 2
+      ? `${nameParts[0]} ${nameParts[1][0].toUpperCase()}.`
+      : fullName;
   const avatarLetter = fullName.charAt(0).toUpperCase();
 
   const formatProgram = (program?: string) => {
     if (!program) return "Student";
-
     const words = program.trim().split(" ").filter(Boolean);
-
-    if (words.length >= 2) {
-      return words[0].slice(0, 4) + words[1].slice(0, 3);
-    }
-
-    return words[0].slice(0, 7);
+    return words.length >= 2
+      ? words[0].slice(0, 4) + words[1].slice(0, 3)
+      : words[0].slice(0, 7);
   };
 
   const shortProgram = formatProgram(profile.program);
 
+  const navLinkClass = (href: string) =>
+    `w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm transition-all ${
+      isActive(href)
+        ? "bg-blue-600 text-white shadow-lg shadow-blue-900/30"
+        : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
+    }`;
+
   return (
-    <aside className="w-64 bg-slate-950 text-white min-h-screen p-5 flex flex-col">
+    <aside className="w-64 min-h-screen p-5 flex flex-col bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 transition-colors">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold tracking-tight">
-            CHEM<span className="text-blue-400">ENG</span>
+          <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+            CHEM<span className="text-blue-500 dark:text-blue-400">ENG</span>
           </h2>
-
-          <p className="text-slate-400 text-xs mt-0.5 uppercase tracking-widest">
+          <p className="text-slate-400 dark:text-slate-500 text-xs mt-0.5 uppercase tracking-widest">
             Assessment System
           </p>
         </div>
@@ -93,7 +89,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
         {onClose && (
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white lg:hidden"
+            className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition lg:hidden"
           >
             <X size={20} />
           </button>
@@ -101,11 +97,11 @@ export default function Sidebar({ onClose }: SidebarProps) {
       </div>
 
       <nav className="space-y-1 flex-1">
-        <p className="text-slate-500 text-xs uppercase tracking-widest px-3 mb-3">
+        <p className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-widest px-3 mb-3">
           Menu
         </p>
 
-        {studentNavItems.map((item) => {
+        {topNavItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href);
 
@@ -114,16 +110,10 @@ export default function Sidebar({ onClose }: SidebarProps) {
               key={item.href}
               href={item.href}
               onClick={onClose}
-              className={`w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm transition ${
-                active
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-900/40"
-                  : "text-slate-400 hover:bg-slate-800 hover:text-white"
-              }`}
+              className={navLinkClass(item.href)}
             >
               <Icon size={18} strokeWidth={1.8} />
-
               {item.label}
-
               {active && (
                 <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white/70" />
               )}
@@ -132,28 +122,54 @@ export default function Sidebar({ onClose }: SidebarProps) {
         })}
       </nav>
 
-      <div className="mt-6 border-t border-slate-800 pt-4">
+      <div className="mt-6">
+        <p className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-widest px-3 mb-3">
+          More
+        </p>
+
+        <div className="space-y-1">
+          {bottomNavItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onClose}
+                className={navLinkClass(item.href)}
+              >
+                <Icon size={18} strokeWidth={1.8} />
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="mt-6 border-t border-slate-100 dark:border-slate-800 pt-4">
         <div className="flex items-center justify-between px-2">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold text-white shrink-0">
               {avatarLetter}
             </div>
 
             <div className="min-w-0">
-              <p className="text-sm font-medium truncate max-w-30">
+              <p className="text-sm font-medium text-slate-800 dark:text-white truncate max-w-30">
                 {displayName}
               </p>
-
-              <p className="text-xs text-slate-500">{shortProgram}</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500">
+                {shortProgram}
+              </p>
             </div>
           </div>
 
+          <div className="h-8 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
+
           <button
             onClick={handleLogout}
-            className="w-9 h-9 rounded-full bg-red-500 flex items-center justify-center text-white hover:bg-red-600 transition"
+            className="w-8 h-8 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center text-white transition shrink-0"
             title="Logout"
           >
-            <LogOut size={16} />
+            <LogOut size={15} />
           </button>
         </div>
       </div>

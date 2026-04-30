@@ -1,6 +1,13 @@
-import { LayoutGrid, Bell, User, BookOpen, Settings } from "lucide-react";
+import {
+  LayoutGrid,
+  Bell,
+  User,
+  BookOpen,
+  Settings,
+  HelpCircle,
+} from "lucide-react";
 
-export const studentNavItems = [
+export const topNavItems = [
   {
     label: "Dashboard",
     href: "/student",
@@ -21,9 +28,17 @@ export const studentNavItems = [
     href: "/student/courses",
     icon: BookOpen,
   },
+];
+
+export const bottomNavItems = [
   {
     label: "Settings",
     href: "/student/settings",
     icon: Settings,
+  },
+  {
+    label: "Help",
+    href: "/student/help",
+    icon: HelpCircle,
   },
 ];

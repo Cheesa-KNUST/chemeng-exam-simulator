@@ -3,7 +3,7 @@ export const courses = [
     slug: "chemical-engineering-101",
     title: "Chemical Engineering 101",
     description: "Intro to thermodynamics, fluid flow, and mass transfer",
-    exams: 5,
+    exams: 3,
   },
   {
     slug: "thermodynamics",
