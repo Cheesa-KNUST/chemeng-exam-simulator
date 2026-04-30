@@ -52,9 +52,7 @@ export default function CourseDetailPage() {
 
             <div className="mt-5">
               <Link href={`/student/exam/${exam.id}`}>
-                <Button variant="primary" fullWidth>
-                  Start Exam
-                </Button>
+                <Button variant="primary">Start Exam</Button>
               </Link>
             </div>
           </div>
