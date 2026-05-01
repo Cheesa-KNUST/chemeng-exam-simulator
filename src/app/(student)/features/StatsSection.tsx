@@ -49,7 +49,7 @@ export default function StatsSection({ loading, stats, trends }: any) {
             trends.scoreDiff === 0
               ? "No change"
               : `${trends.scoreDiff > 0 ? "+" : ""}${trends.scoreDiff}% vs prev`,
-          positive: trends.scoreDiff >= 0,
+          positive: trends.scoreDiff > 0,
         }}
         icon={<BarChart3 size={20} strokeWidth={1.8} />}
       />

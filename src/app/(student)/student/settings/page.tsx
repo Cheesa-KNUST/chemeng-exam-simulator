@@ -299,12 +299,12 @@ export default function SettingsPage() {
               onChange={(v) => updateExam({ showAnswers: v })}
             />
 
-            <Toggle
+            {/* <Toggle
               label="Shuffle questions"
               description="Randomise question order each attempt"
               enabled={settings.shuffleQuestions}
               onChange={(v) => updateExam({ shuffleQuestions: v })}
-            />
+            /> */}
 
             <Toggle
               label="Allow review before submission"

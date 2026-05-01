@@ -1,48 +1,98 @@
 "use client";
 
 import { ReactNode } from "react";
+import ReviewSidebar from "./ReviewSidebar";
+import ReviewHeader from "./ReviewHeader";
+import { Send, ArrowLeft } from "lucide-react";
 
-type Props = {
-  sidebar: ReactNode;
-  header: ReactNode;
+type ReviewShellProps = {
   children: ReactNode;
+  examTitle: string;
+  answered: number;
+  unanswered: number;
+  flaggedCount: number;
+  total: number;
+  timeLeft: number;
+  isTimeUp: boolean;
+  isSubmitting: boolean;
+  onSubmit: () => void;
+  onReturn: () => void;
 };
 
-export default function ReviewShell({ sidebar, header, children }: Props) {
+export default function ReviewShell({
+  children,
+  examTitle,
+  answered,
+  unanswered,
+  flaggedCount,
+  total,
+  timeLeft,
+  isTimeUp,
+  isSubmitting,
+  onSubmit,
+  onReturn,
+}: ReviewShellProps) {
   return (
-    <div className="flex flex-col min-h-screen bg-slate-100 dark:bg-slate-900">
-      <div className="sticky top-0 z-20 shrink-0">{header}</div>
-      <div className="flex flex-1 overflow-hidden lg:flex-row flex-col">
-        <aside
-          className="
-            lg:w-72 xl:w-80 shrink-0
-            lg:sticky lg:top-(--review-header-h,73px)
-            lg:h-[calc(100vh-var(--review-header-h,73px))]
-            lg:overflow-y-auto
-            lg:border-r border-b lg:border-b-0
-            border-slate-200 dark:border-slate-700
-            bg-white dark:bg-slate-950
-            px-5 py-6
-            flex flex-col gap-5
-            order-2 lg:order-1
-          "
-        >
-          {sidebar}
-        </aside>
+    <div className="flex bg-slate-100 dark:bg-slate-900 min-h-screen">
+      <div className="hidden lg:block h-screen sticky top-0 shrink-0">
+        <ReviewSidebar
+          examTitle={examTitle}
+          answered={answered}
+          unanswered={unanswered}
+          flaggedCount={flaggedCount}
+          total={total}
+          timeLeft={timeLeft}
+          isTimeUp={isTimeUp}
+          isSubmitting={isSubmitting}
+          onSubmit={onSubmit}
+          onReturn={onReturn}
+        />
+      </div>
 
-        <main
-          className="
-            flex-1
-            lg:h-[calc(100vh-var(--review-header-h,73px))]
-            lg:overflow-y-auto
-            bg-slate-100 dark:bg-slate-900
-            px-4 sm:px-6 lg:px-8
-            py-6
-            order-1 lg:order-2
-          "
-        >
-          {children}
-        </main>
+      <div className="flex-1 flex flex-col min-w-0">
+        <ReviewHeader
+          examTitle={examTitle}
+          answered={answered}
+          total={total}
+          timeLeft={timeLeft}
+          isTimeUp={isTimeUp}
+        />
+        <main className="p-4 md:p-6 flex-1">{children}</main>
+
+        <div className="lg:hidden shrink-0 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 space-y-3">
+          {!isTimeUp ? (
+            <button
+              onClick={onReturn}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all active:scale-[0.98] border border-slate-200 dark:border-slate-700 bg-transparent text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+            >
+              <ArrowLeft size={14} />
+              Return to Exam
+            </button>
+          ) : (
+            <div className="flex items-start justify-center gap-2.5 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/60">
+              <p className="text-md font-bold text-red-500 dark:text-red-400 leading-relaxed">
+                Session ended
+              </p>
+            </div>
+          )}
+
+          <button
+            onClick={onSubmit}
+            disabled={isSubmitting}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all active:scale-[0.98] bg-red-600 text-white hover:bg-red-700 disabled:opacity-60"
+          >
+            {isSubmitting ? (
+              <>
+                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              </>
+            ) : (
+              <>
+                <Send size={14} />
+                Confirm & Submit
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

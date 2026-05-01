@@ -1,4 +1,5 @@
 export type ExamQuestion = {
+  id: string;
   question: string;
   options: string[];
   answer: string;
@@ -19,11 +20,12 @@ export const exams: Exam[] = [
     id: "exam-1",
     courseSlug: "chemical-engineering-101",
     title: "Thermodynamics Basics",
-    duration: 2,
+    duration: 90,
     difficulty: "Easy",
     type: "MCQ's",
     questions: [
       {
+        id: "q1",
         question: "What is the first law of thermodynamics?",
         options: [
           "Energy cannot be created or destroyed",
@@ -34,11 +36,13 @@ export const exams: Exam[] = [
         answer: "Energy cannot be created or destroyed",
       },
       {
+        id: "q2",
         question: "Which quantity is always conserved?",
         options: ["Energy", "Temperature", "Pressure", "Volume"],
         answer: "Energy",
       },
       {
+        id: "q3",
         question: "What is the first law of thermodynamics?",
         options: [
           "Energy cannot be created or destroyed",
@@ -49,11 +53,13 @@ export const exams: Exam[] = [
         answer: "Energy cannot be created or destroyed",
       },
       {
+        id: "q4",
         question: "Which quantity is always conserved?",
         options: ["Energy", "Temperature", "Pressure", "Volume"],
         answer: "Energy",
       },
       {
+        id: "q5",
         question: "Which quantity is always conserved?",
         options: ["Energy", "Temperature", "Pressure", "Volume"],
         answer: "Energy",
@@ -69,6 +75,7 @@ export const exams: Exam[] = [
     type: "Theory",
     questions: [
       {
+        id: "q1",
         question: "What is viscosity?",
         options: [
           "Resistance to flow",
@@ -89,6 +96,7 @@ export const exams: Exam[] = [
     type: "Theory and MCQ's",
     questions: [
       {
+        id: "q1",
         question: "Second law of thermodynamics states?",
         options: [
           "Entropy of universe increases",
@@ -109,6 +117,7 @@ export const exams: Exam[] = [
     type: "MCQ's",
     questions: [
       {
+        id: "q1",
         question: "What is the first law of thermodynamics?",
         options: [
           "Energy cannot be created or destroyed",
@@ -119,6 +128,7 @@ export const exams: Exam[] = [
         answer: "Energy cannot be created or destroyed",
       },
       {
+        id: "q2",
         question: "Which quantity is always conserved?",
         options: ["Energy", "Temperature", "Pressure", "Volume"],
         answer: "Energy",
@@ -134,6 +144,7 @@ export const exams: Exam[] = [
     type: "Theory",
     questions: [
       {
+        id: "q1",
         question: "What is viscosity?",
         options: [
           "Resistance to flow",
@@ -154,6 +165,7 @@ export const exams: Exam[] = [
     type: "Theory and MCQ's",
     questions: [
       {
+        id: "q1",
         question: "Second law of thermodynamics states?",
         options: [
           "Entropy of universe increases",

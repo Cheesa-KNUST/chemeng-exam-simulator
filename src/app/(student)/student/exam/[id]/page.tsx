@@ -233,15 +233,17 @@ export default function ExamPage() {
         title={exam.title}
         subtitle={`Question ${safeIndex + 1} of ${totalQuestions} · ${answeredCount} answered`}
         action={
-          <div
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border transition-colors ${
-              isLowTime
-                ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700 text-red-600 dark:text-red-400"
-                : "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
-            }`}
-          >
-            <Clock size={15} className={isLowTime ? "animate-pulse" : ""} />
-            {formatTime(timeLeft)}
+          <div className="flex justify-center sm:justify-end w-full sm:w-auto">
+            <div
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border transition-colors ${
+                isLowTime
+                  ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700 text-red-600 dark:text-red-400"
+                  : "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300"
+              }`}
+            >
+              <Clock size={15} className={isLowTime ? "animate-pulse" : ""} />
+              {formatTime(timeLeft)}
+            </div>
           </div>
         }
       />
