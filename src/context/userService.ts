@@ -25,7 +25,7 @@ export type UserProfile = {
 };
 
 export type UserSettings = {
-  autoSubmit: boolean;
+  notifications: boolean;
   showAnswers: boolean;
   shuffleQuestions: boolean;
   allowReview: boolean;
@@ -102,7 +102,7 @@ export function listenToUserSettings(
 
     callback(
       (data?.settings as UserSettings) ?? {
-        autoSubmit: true,
+        notifications: true,
         showAnswers: true,
         shuffleQuestions: false,
         allowReview: true,

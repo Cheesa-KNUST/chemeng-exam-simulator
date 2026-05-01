@@ -17,7 +17,11 @@ import {
   UserSettings,
   resetUserExams,
 } from "@/context/userService";
-import { resetPassword, deleteAccount } from "@/context/authService";
+import {
+  resetPassword,
+  deleteAccount,
+  logoutUser,
+} from "@/context/authService";
 
 function useToast() {
   const toast = (msg: string, success = true) => {
@@ -90,16 +94,18 @@ export default function SettingsPage() {
 
   const [username, setUsername] = useState("");
   const [settings, setSettings] = useState<UserSettings>({
-    autoSubmit: true,
+    notifications: true,
     showAnswers: true,
     shuffleQuestions: false,
     allowReview: true,
   });
 
-  const [saving, setSaving] = useState(false);
+  const [savingGeneral, setSavingGeneral] = useState(false);
+  const [savingExam, setSavingExam] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [resetting, setResetting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -115,15 +121,29 @@ export default function SettingsPage() {
     return () => unsub();
   }, [user]);
 
-  const update = async (patch: Partial<UserSettings>) => {
+  const updateGeneral = async (patch: Partial<UserSettings>) => {
     if (!user) return;
     const newSettings = { ...settings, ...patch };
     setSettings(newSettings);
+
     try {
-      setSaving(true);
+      setSavingGeneral(true);
       await updateUserSettings(user.uid, newSettings);
     } finally {
-      setSaving(false);
+      setSavingGeneral(false);
+    }
+  };
+
+  const updateExam = async (patch: Partial<UserSettings>) => {
+    if (!user) return;
+    const newSettings = { ...settings, ...patch };
+    setSettings(newSettings);
+
+    try {
+      setSavingExam(true);
+      await updateUserSettings(user.uid, newSettings);
+    } finally {
+      setSavingExam(false);
     }
   };
 
@@ -140,15 +160,35 @@ export default function SettingsPage() {
   const handleDeleteAccount = async () => {
     try {
       setDeleting(true);
+      setDeleteError(null);
+
       await deleteAccount();
+
       toast("Account deleted successfully", true);
       router.replace("/");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      toast("Failed to delete account. Try logging in again.", false);
+      const message =
+        err?.code === "auth/requires-recent-login" ||
+        err?.message?.includes("recent login")
+          ? "You need to log in again before deleting your account."
+          : "Failed to delete account.";
+
+      setDeleteError(message);
+
+      toast(message, false);
     } finally {
       setDeleting(false);
       setShowDeleteModal(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      router.replace("/");
+    } catch (err) {
+      console.error("Logout failed:", err);
     }
   };
 
@@ -182,7 +222,6 @@ export default function SettingsPage() {
             subtitle="Manage your exam preferences and account behavior"
           />
 
-          {/* Account card */}
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 space-y-5">
             <div>
               <h2 className="text-slate-800 dark:text-slate-100 font-semibold text-base">
@@ -209,6 +248,32 @@ export default function SettingsPage() {
             </div>
           </div>
 
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <h2 className="text-slate-800 dark:text-slate-100 font-semibold text-base">
+                  General Settings
+                </h2>
+                <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
+                  Notifications and account-wide preferences
+                </p>
+              </div>
+
+              {savingGeneral && (
+                <span className="text-xs text-slate-400 dark:text-slate-500 animate-pulse">
+                  Saving...
+                </span>
+              )}
+            </div>
+
+            <Toggle
+              label="Admin notifications"
+              description="Receive notifications and announcements from administrators"
+              enabled={settings.notifications}
+              onChange={(v) => updateGeneral({ notifications: v })}
+            />
+          </div>
+
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-2">
               <div>
@@ -219,7 +284,8 @@ export default function SettingsPage() {
                   Control how exams behave for you
                 </p>
               </div>
-              {saving && (
+
+              {savingExam && (
                 <span className="text-xs text-slate-400 dark:text-slate-500 animate-pulse">
                   Saving...
                 </span>
@@ -227,28 +293,24 @@ export default function SettingsPage() {
             </div>
 
             <Toggle
-              label="Auto-submit on timer end"
-              description="Automatically submit when time runs out"
-              enabled={settings.autoSubmit}
-              onChange={(v) => update({ autoSubmit: v })}
-            />
-            <Toggle
-              label="Show correct answers immediately"
+              label="Show correct answers"
               description="Reveal answers right after submission"
               enabled={settings.showAnswers}
-              onChange={(v) => update({ showAnswers: v })}
+              onChange={(v) => updateExam({ showAnswers: v })}
             />
+
             <Toggle
               label="Shuffle questions"
               description="Randomise question order each attempt"
               enabled={settings.shuffleQuestions}
-              onChange={(v) => update({ shuffleQuestions: v })}
+              onChange={(v) => updateExam({ shuffleQuestions: v })}
             />
+
             <Toggle
               label="Allow review before submission"
               description="Let students go back and change answers"
               enabled={settings.allowReview}
-              onChange={(v) => update({ allowReview: v })}
+              onChange={(v) => updateExam({ allowReview: v })}
             />
           </div>
 
@@ -281,10 +343,30 @@ export default function SettingsPage() {
               <h2 className="text-slate-800 dark:text-slate-100 text-lg font-semibold">
                 Delete Account?
               </h2>
+
               <p className="text-slate-500 dark:text-slate-400 text-sm mt-2 leading-relaxed">
                 This action is irreversible. All your data, results, and
                 progress will be permanently removed.
               </p>
+
+              {deleteError && (
+                <div className="mt-4 rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-4">
+                  <div className="flex items-start gap-2">
+                    <div className="mt-0.5 h-2 w-2 rounded-full bg-red-500 shrink-0" />
+
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium text-red-700 dark:text-red-300">
+                        {deleteError}
+                      </p>
+
+                      <p className="text-xs text-red-600/80 dark:text-red-400/80 leading-relaxed">
+                        You`ll need to sign out and log back in before you can
+                        delete your account.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="flex justify-end gap-3 mt-6">
                 <Button
@@ -294,13 +376,20 @@ export default function SettingsPage() {
                 >
                   Cancel
                 </Button>
-                <Button
-                  variant="danger"
-                  onClick={handleDeleteAccount}
-                  disabled={deleting}
-                >
-                  {deleting ? "Deleting..." : "Yes, Delete"}
-                </Button>
+
+                {deleteError ? (
+                  <Button variant="secondary" onClick={handleLogout}>
+                    Go to Login
+                  </Button>
+                ) : (
+                  <Button
+                    variant="danger"
+                    onClick={handleDeleteAccount}
+                    disabled={deleting}
+                  >
+                    {deleting ? "Deleting..." : "Yes, Delete"}
+                  </Button>
+                )}
               </div>
             </div>
           </div>

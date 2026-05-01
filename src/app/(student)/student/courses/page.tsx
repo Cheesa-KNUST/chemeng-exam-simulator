@@ -112,7 +112,7 @@ export default function CoursesPage() {
                       size={14}
                       className="shrink-0 text-slate-400 dark:text-slate-500"
                     />
-                    {exam.duration} mins
+                    {exam.duration} {exam.duration === 1 ? "min" : "mins"}
                   </div>
                   <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                     <HelpCircle

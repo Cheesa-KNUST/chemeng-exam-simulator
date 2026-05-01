@@ -121,7 +121,6 @@ export default function ProfileSettingsPage() {
         />
 
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-6 md:p-8 shadow-sm">
-          {/* Avatar section */}
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 pb-8 mb-8 border-b border-slate-100 dark:border-slate-700">
             <div className="h-24 w-24 rounded-full overflow-hidden border-4 border-slate-100 dark:border-slate-700 bg-slate-100 dark:bg-slate-700 shrink-0">
               <Image
@@ -144,7 +143,6 @@ export default function ProfileSettingsPage() {
             </div>
           </div>
 
-          {/* Form section */}
           <div>
             <div className="mb-6">
               <h2 className="text-slate-800 dark:text-slate-100 font-semibold text-lg">

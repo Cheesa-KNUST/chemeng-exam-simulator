@@ -19,7 +19,7 @@ export const exams: Exam[] = [
     id: "exam-1",
     courseSlug: "chemical-engineering-101",
     title: "Thermodynamics Basics",
-    duration: 30,
+    duration: 2,
     difficulty: "Easy",
     type: "MCQ's",
     questions: [

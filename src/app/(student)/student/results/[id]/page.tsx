@@ -6,6 +6,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import type { ExamQuestion } from "@/mock/exams";
 import { exams } from "@/mock/exams";
 import { CheckCircle2, XCircle, MinusCircle, Trophy } from "lucide-react";
+import { useExamSettings } from "@/hooks/useExamSettings";
 
 export default function ResultsPage() {
   const { id } = useParams();
@@ -14,6 +15,7 @@ export default function ResultsPage() {
   const exam = exams.find((e) => e.id === id);
   const raw = searchParams.get("data");
   const answers = raw ? JSON.parse(decodeURIComponent(raw)) : {};
+  const { showAnswers } = useExamSettings();
 
   if (!exam) {
     return (
@@ -183,7 +185,7 @@ export default function ResultsPage() {
                       </span>
                     </p>
 
-                    {!isCorrect && (
+                    {showAnswers && !isCorrect && (
                       <p className="text-xs text-slate-500 dark:text-slate-400">
                         Correct answer:{" "}
                         <span className="font-medium text-emerald-600 dark:text-emerald-400">

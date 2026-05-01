@@ -11,10 +11,28 @@ import {
 } from "firebase/auth";
 
 import { auth, db } from "@/lib/firebase";
-import { doc, deleteDoc } from "firebase/firestore";
+import { doc, deleteDoc, setDoc, getDoc } from "firebase/firestore";
+import { resetUserExams } from "./userService";
 
-export async function signupUser(email: string, password: string) {
-  return await createUserWithEmailAndPassword(auth, email, password);
+export async function signupUser(
+  email: string,
+  password: string,
+  extra: {
+    username: string;
+    program: string;
+    semester: string;
+    level: string;
+  },
+) {
+  const cred = await createUserWithEmailAndPassword(auth, email, password);
+
+  await setDoc(doc(db, "users", cred.user.uid), {
+    email,
+    ...extra,
+    createdAt: new Date(),
+  });
+
+  return cred;
 }
 
 export async function loginUser(email: string, password: string) {
@@ -23,7 +41,15 @@ export async function loginUser(email: string, password: string) {
 
 export async function loginWithGoogle() {
   const provider = new GoogleAuthProvider();
-  return await signInWithPopup(auth, provider);
+  const result = await signInWithPopup(auth, provider);
+
+  const ref = doc(db, "users", result.user.uid);
+  const snap = await getDoc(ref);
+
+  return {
+    user: result.user,
+    isNewUser: !snap.exists(),
+  };
 }
 
 export async function logoutUser() {
@@ -45,6 +71,7 @@ export async function deleteAccount(password?: string) {
   }
 
   await deleteDoc(doc(db, "users", user.uid));
+  await resetUserExams(user.uid);
 
   await deleteUser(user);
 }

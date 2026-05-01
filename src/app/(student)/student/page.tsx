@@ -13,7 +13,7 @@ import RecentExamsSection from "@/app/(student)/features/RecentExamsSection";
 
 import PerformanceChart from "@/components/charts/PerformanceChart";
 import ScoreDistributionChart from "@/components/charts/ScoreDistributionChart";
-import ActivityChart from "@/components/charts/ActivityChart";
+// import ActivityChart from "@/components/charts/ActivityChart";
 
 import Skeleton from "@/components/ui/Skeleton";
 
@@ -25,16 +25,18 @@ export default function HomePage() {
     stats,
     performance,
     distribution,
-    activity,
+    // activity,
     trends,
     data,
   } = useDashboardData();
+
+  const welcomeName = username?.split(" ")[0] || "Chemineer";
 
   return (
     <AppShell>
       <PageHeader
         title="Dashboard"
-        subtitle={`Welcome back, ${username}. Here's your progress overview.`}
+        subtitle={`Welcome back, ${welcomeName}. Here's your progress overview.`}
         action={
           <Link href="/student/courses">
             <Button>Start Practice</Button>
@@ -66,7 +68,7 @@ export default function HomePage() {
         </div>
       )}
 
-      <SectionTitle
+      {/* <SectionTitle
         title="Study Activity"
         description="Your weekly engagement and exam participation patterns"
       />
@@ -77,11 +79,11 @@ export default function HomePage() {
         <div className="mb-6">
           <ActivityChart data={activity} />
         </div>
-      )}
+      )} */}
 
       <SectionTitle
         title="Performance Breakdown"
-        description="Detailed analysis of your strengths and areas for improvement"
+        description="Detailed analysis of your strengths and areas for improvement (Last 5)"
       />
 
       <RecentExamsSection data={data} />
