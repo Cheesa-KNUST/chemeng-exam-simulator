@@ -8,7 +8,7 @@ export function useExamSettings() {
   const { user } = useAuth();
 
   const [settings, setSettings] = useState<UserSettings>({
-    autoSubmit: true,
+    notifications: true,
     showAnswers: true,
     shuffleQuestions: false,
     allowReview: true,
@@ -26,7 +26,7 @@ export function useExamSettings() {
       showAnswers: settings.showAnswers,
       shuffleQuestions: settings.shuffleQuestions,
       allowReview: settings.allowReview,
-      autoSubmit: settings.autoSubmit,
+      notifications: settings.notifications,
     };
   }, [settings]);
 
