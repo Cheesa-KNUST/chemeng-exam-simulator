@@ -12,6 +12,7 @@ export function useExamSettings() {
     showAnswers: true,
     shuffleQuestions: true,
     allowReview: true,
+    saveChats: true,
   });
 
   const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
@@ -32,6 +33,7 @@ export function useExamSettings() {
       shuffleQuestions: settings.shuffleQuestions,
       allowReview: settings.allowReview,
       notifications: settings.notifications,
+      saveChats: settings.saveChats,
       isSettingsLoaded,
     };
   }, [settings, isSettingsLoaded]);
