@@ -4,18 +4,18 @@ import { useMemo } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import AppShell from "@/components/layout/AppShell";
 import PageHeader from "@/components/layout/PageHeader";
-import type { ExamQuestion } from "@/mock/exams";
-import { exams } from "@/mock/exams";
 import { CheckCircle2, XCircle, MinusCircle, Trophy } from "lucide-react";
 import { useExamSettings } from "@/hooks/useExamSettings";
 import { useExamStore } from "@/store/exam.store";
+import { useExam } from "@/helpers/exam/exam.service";
 import { deriveQuestions } from "@/helpers/exam/examShuffle";
+import Loader from "@/components/ui/Loader";
 
 export default function ResultsPage() {
   const { id } = useParams();
   const searchParams = useSearchParams();
 
-  const exam = useMemo(() => exams.find((e) => e.id === id), [id]);
+  const { exam, loading: examLoading } = useExam(id as string);
   const raw = searchParams.get("data");
   const answers: Record<number, string> = raw
     ? JSON.parse(decodeURIComponent(raw))
@@ -25,9 +25,13 @@ export default function ResultsPage() {
   const { questionOrder, optionOrder } = useExamStore();
 
   const questions = useMemo(() => {
-    if (!exam) return [] as ExamQuestion[];
+    if (!exam) return [];
     return deriveQuestions(exam, questionOrder, optionOrder, shuffleQuestions);
   }, [exam, questionOrder, optionOrder, shuffleQuestions]);
+
+  if (examLoading) {
+    return <Loader fullPage size="lg" label="Loading results..." />;
+  }
 
   if (!exam) {
     return (

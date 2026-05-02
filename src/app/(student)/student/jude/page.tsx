@@ -77,8 +77,8 @@ export default function AIPage() {
   return (
     <AppShell>
       <PageHeader
-        title="AI Assistant"
-        subtitle="Ask questions, get explanations, and revise faster with AI support"
+        title="Jude AI"
+        subtitle="Ask questions, get explanations, and revise faster with JudeAI support"
         action={<Sparkles className="text-blue-500" />}
       />
 

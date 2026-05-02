@@ -21,7 +21,7 @@ export default function RecentExamsSection({ data }: any) {
         description="Take more exams to unlock deeper performance insights."
         action={
           <Link href="/student/courses">
-            <Button variant="secondary">Start an Exam</Button>
+            <Button variant="primary">Start an Exam</Button>
           </Link>
         }
       />

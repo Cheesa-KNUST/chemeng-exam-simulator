@@ -1,19 +1,19 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useCallback, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 import ExamShell from "@/components/exam/ExamShell";
 import ExamSidebar from "@/components/exam/ExamSidebar";
 import PageHeader from "@/components/layout/PageHeader";
-
 import Button from "@/components/ui/Button";
 import Loader from "@/components/ui/Loader";
+import EmptyState from "@/components/ui/EmptyState";
 
-import { exams } from "@/mock/exams";
 import { Clock, AlertCircle } from "lucide-react";
 
-import { saveExamResult } from "@/helpers/exam/exam.service";
+import { saveExamResult, useExam } from "@/helpers/exam/exam.service";
 import { useAuth } from "@/context/AuthContext";
 
 import { useExamStore } from "@/store/exam.store";
@@ -26,7 +26,7 @@ export default function ExamPage() {
   const { user } = useAuth();
   const uid = user?.uid;
 
-  const exam = useMemo(() => exams.find((e) => e.id === id), [id]);
+  const { exam, loading: examLoading } = useExam(id as string);
 
   const {
     examId,
@@ -204,8 +204,8 @@ export default function ExamPage() {
     }
   };
 
-  if (!isSettingsLoaded) {
-    <Loader fullPage size="lg" label="Loading exam..." />;
+  if (examLoading || !isSettingsLoaded) {
+    return <Loader fullPage size="lg" label="Loading exam..." />;
   }
 
   if (!exam) {
@@ -220,12 +220,21 @@ export default function ExamPage() {
             onJump={setCurrent}
             onSubmit={handleSubmitOrReview}
             onToggleFlag={toggleFlag}
+            disabled
           />
         }
       >
-        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mt-10 justify-center">
-          <AlertCircle size={18} />
-          <span>Exam not found</span>
+        <div className="flex items-center justify-center h-full min-h-[60vh]">
+          <EmptyState
+            icon={<AlertCircle size={22} />}
+            title="Exam not found"
+            description="We couldn't find this exam. It may have been deleted, moved, or you might not have access to it."
+            action={
+              <Link href="/student/courses">
+                <Button variant="primary">Go back to courses</Button>
+              </Link>
+            }
+          />
         </div>
       </ExamShell>
     );

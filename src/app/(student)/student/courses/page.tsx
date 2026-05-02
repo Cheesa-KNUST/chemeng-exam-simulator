@@ -53,45 +53,57 @@ export default function CoursesPage() {
       />
 
       <div className="mt-2 mb-6 max-h-[28vh] overflow-y-auto no-scrollbar">
-        <div className="mt-4 mb-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {courses.map((course) => {
-            const isActive = course.slug === selectedCourse?.slug;
+        {courses.length === 0 ? (
+          <EmptyState
+            icon={<BookOpen size={22} />}
+            title="No courses found"
+            description={
+              courseQuery
+                ? "No courses match your search. Try a different keyword."
+                : "There are no courses available at the moment."
+            }
+          />
+        ) : (
+          <div className="mt-4 mb-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {courses.map((course) => {
+              const isActive = course.slug === selectedCourse?.slug;
 
-            return (
-              <button
-                key={course.slug}
-                onClick={() => {
-                  setSelectedCourse(course);
-                  setExamQuery("");
-                }}
-                className={`text-left group rounded-2xl p-5 transition-all border ${
-                  isActive
-                    ? "border-blue-500 bg-blue-50 dark:bg-blue-500/10 shadow-md shadow-blue-200/60 dark:shadow-blue-900/20"
-                    : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm"
-                }`}
-              >
-                <h3
-                  className={`text-base font-semibold transition ${
+              return (
+                <button
+                  key={course.slug}
+                  onClick={() => {
+                    setSelectedCourse(course);
+                    setExamQuery("");
+                  }}
+                  className={`text-left group rounded-2xl p-5 transition-all border ${
                     isActive
-                      ? "text-blue-600 dark:text-blue-400"
-                      : "text-slate-800 dark:text-slate-100"
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-500/10 shadow-md shadow-blue-200/60 dark:shadow-blue-900/20"
+                      : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm"
                   }`}
                 >
-                  {course.title}
-                </h3>
+                  <h3
+                    className={`text-base font-semibold transition ${
+                      isActive
+                        ? "text-blue-600 dark:text-blue-400"
+                        : "text-slate-800 dark:text-slate-100"
+                    }`}
+                  >
+                    {course.title}
+                  </h3>
 
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
-                  {course.description}
-                </p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                    {course.description}
+                  </p>
 
-                <div className="mt-4 text-xs text-slate-400 dark:text-slate-500 font-medium">
-                  {course.exams} {course.exams === 1 ? "Exam" : "Exams"}{" "}
-                  available
-                </div>
-              </button>
-            );
-          })}
-        </div>
+                  <div className="mt-4 text-xs text-slate-400 dark:text-slate-500 font-medium">
+                    {course.exams} {course.exams === 1 ? "Exam" : "Exams"}{" "}
+                    available
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="h-px bg-slate-200 dark:bg-slate-700 mb-6" />

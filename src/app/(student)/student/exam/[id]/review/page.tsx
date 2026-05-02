@@ -2,12 +2,12 @@
 
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { exams } from "@/mock/exams";
 import { useExamStore } from "@/store/exam.store";
 import { useAuth } from "@/context/AuthContext";
-import { saveExamResult } from "@/helpers/exam/exam.service";
+import { saveExamResult, useExam } from "@/helpers/exam/exam.service";
 import { CheckCircle2, XCircle, Flag, AlertTriangle } from "lucide-react";
 import ReviewShell from "@/components/review/ReviewShell";
+import Loader from "@/components/ui/Loader";
 import { useExamSettings } from "@/hooks/useExamSettings";
 import { deriveQuestions } from "@/helpers/exam/examShuffle";
 
@@ -17,7 +17,7 @@ export default function ReviewPage() {
   const uid = user?.uid;
   const router = useRouter();
 
-  const exam = useMemo(() => exams.find((e) => e.id === id), [id]);
+  const { exam, loading: examLoading } = useExam(id as string);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -86,6 +86,10 @@ export default function ReviewPage() {
     setCompleted,
     isSubmitting,
   ]);
+
+  if (examLoading) {
+    return <Loader fullPage size="lg" label="Loading review..." />;
+  }
 
   if (!exam) return null;
 
