@@ -29,6 +29,7 @@ export type UserSettings = {
   showAnswers: boolean;
   shuffleQuestions: boolean;
   allowReview: boolean;
+  saveChats: boolean;
 };
 
 export type Notification = {
@@ -104,8 +105,9 @@ export function listenToUserSettings(
       (data?.settings as UserSettings) ?? {
         notifications: true,
         showAnswers: true,
-        shuffleQuestions: false,
+        shuffleQuestions: true,
         allowReview: true,
+        saveChats: true,
       },
     );
   });

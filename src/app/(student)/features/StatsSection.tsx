@@ -2,6 +2,7 @@ import StatCard from "@/components/ui/StatCard";
 import { BookOpen, ClipboardCheck, BarChart3 } from "lucide-react";
 import Skeleton from "@/components/ui/Skeleton";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function StatsSection({ loading, stats, trends }: any) {
   if (loading) {
     return (
@@ -21,7 +22,7 @@ export default function StatsSection({ loading, stats, trends }: any) {
         accent="bg-blue-500"
         trend={{
           value: stats.courses > 0 ? `${stats.courses} total` : "None yet",
-          positive: stats.courses > 0,
+          positive: stats.courses > 0 ? true : null,
         }}
         icon={<BookOpen size={20} strokeWidth={1.8} />}
       />
@@ -32,10 +33,10 @@ export default function StatsSection({ loading, stats, trends }: any) {
         accent="bg-emerald-500"
         trend={{
           value:
-            trends.weeklyExams > 0
-              ? `${trends.weeklyExams} this week`
-              : "None this week",
-          positive: trends.weeklyExams > 0,
+            trends.examDiff === 0
+              ? "No change"
+              : `${trends.examDiff > 0 ? "+" : ""}${trends.examDiff} [This week (${trends.weeklyExams}) vs Last week (${trends.prevExams})]`,
+          positive: trends.examDiff === 0 ? null : trends.examDiff > 0,
         }}
         icon={<ClipboardCheck size={20} strokeWidth={1.8} />}
       />
@@ -49,7 +50,7 @@ export default function StatsSection({ loading, stats, trends }: any) {
             trends.scoreDiff === 0
               ? "No change"
               : `${trends.scoreDiff > 0 ? "+" : ""}${trends.scoreDiff}% vs prev`,
-          positive: trends.scoreDiff > 0,
+          positive: trends.scoreDiff === 0 ? null : trends.scoreDiff > 0,
         }}
         icon={<BarChart3 size={20} strokeWidth={1.8} />}
       />

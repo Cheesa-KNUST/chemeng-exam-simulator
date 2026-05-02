@@ -4,13 +4,14 @@ import Button from "@/components/ui/Button";
 import Link from "next/link";
 import { ClipboardCheck } from "lucide-react";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function RecentExamsSection({ data }: any) {
   const recentExams = [...data]
     .sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     )
-    .slice(0, 5);
+    .slice(0, 6);
 
   if (data.length === 0) {
     return (

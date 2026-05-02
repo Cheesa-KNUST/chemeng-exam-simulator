@@ -6,6 +6,13 @@ import {
   DashboardStats,
 } from "./dashboard.types";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getDate(raw: any): Date {
+  if (raw?.toDate) return raw.toDate();
+  if (raw?._seconds) return new Date(raw._seconds * 1000);
+  return new Date(raw);
+}
+
 export function getStats(data: ExamResult[]): DashboardStats {
   const total = data.length;
 
@@ -61,63 +68,73 @@ export function getScoreDistribution(data: ExamResult[]): DistributionPoint[] {
 }
 
 export function getActivityData(data: ExamResult[]): ActivityPoint[] {
-  const weeks: Record<string, number> = {};
+  const days: Record<string, number> = {};
 
   data.forEach((d) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const raw = d.createdAt as any;
-    const date = raw?.toDate ? raw.toDate() : new Date(raw);
+    const date = getDate(d.createdAt);
 
     if (isNaN(date.getTime())) return;
 
-    const weekNumber = Math.ceil(date.getDate() / 7);
-    const week = `W${weekNumber}`;
-    weeks[week] = (weeks[week] || 0) + 1;
+    const key = date.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+
+    days[key] = (days[key] || 0) + 1;
   });
 
-  return Object.entries(weeks).map(([week, exams]) => ({ week, exams }));
+  return Object.entries(days)
+    .map(([week, exams]) => ({ week, exams }))
+    .sort((a, b) => {
+      return new Date(a.week).getTime() - new Date(b.week).getTime();
+    });
 }
 
 export function getTrends(data: ExamResult[]) {
   const now = new Date();
-  const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - now.getDay());
-  startOfWeek.setHours(0, 0, 0, 0);
 
-  const thisWeekExams = data.filter((d) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const raw = d.createdAt as any;
-    const date = raw?.toDate ? raw.toDate() : new Date(raw);
-    return date >= startOfWeek;
-  }).length;
+  const last7Days = new Date(now);
+  last7Days.setDate(now.getDate() - 7);
 
-  const sorted = [...data].sort((a, b) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const aRaw = a.createdAt as any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const bRaw = b.createdAt as any;
-    const aDate = aRaw?.toDate ? aRaw.toDate() : new Date(aRaw);
-    const bDate = bRaw?.toDate ? bRaw.toDate() : new Date(bRaw);
-    return bDate.getTime() - aDate.getTime();
+  const prev14Days = new Date(now);
+  prev14Days.setDate(now.getDate() - 14);
+
+  const lastPeriod = data.filter((d) => {
+    const date = getDate(d.createdAt);
+    return date >= last7Days;
   });
 
-  const recent = sorted.slice(0, 3);
-  const previous = sorted.slice(3, 6);
+  const prevPeriod = data.filter((d) => {
+    const date = getDate(d.createdAt);
+    return date >= prev14Days && date < last7Days;
+  });
 
-  const recentAvg =
-    recent.length === 0
+  const weeklyExams = lastPeriod.length;
+
+  const prevExams = prevPeriod.length;
+
+  const examDiff = weeklyExams - prevExams;
+
+  const lastScores = lastPeriod.map((d) => d.score);
+  const prevScores = prevPeriod.map((d) => d.score);
+
+  const lastAvg =
+    lastScores.length === 0
       ? 0
-      : Math.round(recent.reduce((a, d) => a + d.score, 0) / recent.length);
+      : Math.round(lastScores.reduce((a, b) => a + b, 0) / lastScores.length);
 
   const prevAvg =
-    previous.length === 0
+    prevScores.length === 0
       ? 0
-      : Math.round(previous.reduce((a, d) => a + d.score, 0) / previous.length);
+      : Math.round(prevScores.reduce((a, b) => a + b, 0) / prevScores.length);
 
-  const scoreDiff = recentAvg - prevAvg;
+  const scoreDiff = lastAvg - prevAvg;
 
   return {
-    weeklyExams: thisWeekExams,
+    weeklyExams,
+    examDiff,
     scoreDiff,
+    prevExams,
   };
 }

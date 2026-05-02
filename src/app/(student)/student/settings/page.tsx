@@ -98,6 +98,7 @@ export default function SettingsPage() {
     showAnswers: true,
     shuffleQuestions: false,
     allowReview: true,
+    saveChats: true,
   });
 
   const [savingGeneral, setSavingGeneral] = useState(false);
@@ -166,6 +167,7 @@ export default function SettingsPage() {
 
       toast("Account deleted successfully", true);
       router.replace("/");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error(err);
       const message =
@@ -272,6 +274,13 @@ export default function SettingsPage() {
               enabled={settings.notifications}
               onChange={(v) => updateGeneral({ notifications: v })}
             />
+
+            <Toggle
+              label="Save AI Chats"
+              description="Store your JudeAI conversations so you can revisit them later"
+              enabled={settings.saveChats}
+              onChange={(v) => updateGeneral({ saveChats: v })}
+            />
           </div>
 
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6">
@@ -299,12 +308,12 @@ export default function SettingsPage() {
               onChange={(v) => updateExam({ showAnswers: v })}
             />
 
-            {/* <Toggle
+            <Toggle
               label="Shuffle questions"
               description="Randomise question order each attempt"
               enabled={settings.shuffleQuestions}
               onChange={(v) => updateExam({ shuffleQuestions: v })}
-            /> */}
+            />
 
             <Toggle
               label="Allow review before submission"

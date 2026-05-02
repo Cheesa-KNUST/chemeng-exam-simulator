@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { exams } from "@/mock/exams";
 import { useExamStore } from "@/store/exam.store";
@@ -8,6 +8,8 @@ import { useAuth } from "@/context/AuthContext";
 import { saveExamResult } from "@/helpers/exam/exam.service";
 import { CheckCircle2, XCircle, Flag, AlertTriangle } from "lucide-react";
 import ReviewShell from "@/components/review/ReviewShell";
+import { useExamSettings } from "@/hooks/useExamSettings";
+import { deriveQuestions } from "@/helpers/exam/examShuffle";
 
 export default function ReviewPage() {
   const { id } = useParams();
@@ -15,11 +17,26 @@ export default function ReviewPage() {
   const uid = user?.uid;
   const router = useRouter();
 
-  const exam = exams.find((e) => e.id === id);
+  const exam = useMemo(() => exams.find((e) => e.id === id), [id]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { answers, flagged, timeLeft, examId, isTimeUp, setCompleted } =
-    useExamStore();
+  const {
+    answers,
+    flagged,
+    timeLeft,
+    examId,
+    isTimeUp,
+    questionOrder,
+    optionOrder,
+    setCompleted,
+  } = useExamStore();
+
+  const { shuffleQuestions } = useExamSettings();
+
+  const questions = useMemo(() => {
+    if (!exam) return [];
+    return deriveQuestions(exam, questionOrder, optionOrder, shuffleQuestions);
+  }, [exam, questionOrder, optionOrder, shuffleQuestions]);
 
   useEffect(() => {
     if (!exam) return;
@@ -32,12 +49,15 @@ export default function ReviewPage() {
     if (!exam || !uid || isSubmitting) return;
     try {
       setIsSubmitting(true);
+
       let correct = 0;
-      exam.questions.forEach((q, i) => {
+      questions.forEach((q, i) => {
         if (answers[i] === q.answer) correct++;
       });
-      const total = exam.questions.length;
+
+      const total = questions.length;
       const percent = Math.round((correct / total) * 100);
+
       if (!isTimeUp) {
         await saveExamResult({
           userId: uid,
@@ -48,6 +68,7 @@ export default function ReviewPage() {
           correct,
         });
       }
+
       setCompleted(true);
       router.push(
         `/student/results/${exam.id}?data=${encodeURIComponent(JSON.stringify(answers))}`,
@@ -55,11 +76,20 @@ export default function ReviewPage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [exam, answers, uid, router, isTimeUp, setCompleted, isSubmitting]);
+  }, [
+    exam,
+    questions,
+    answers,
+    uid,
+    router,
+    isTimeUp,
+    setCompleted,
+    isSubmitting,
+  ]);
 
   if (!exam) return null;
 
-  const total = exam.questions.length;
+  const total = questions.length;
   const answered = Object.keys(answers).length;
   const unanswered = total - answered;
   const flaggedCount = Object.values(flagged).filter(Boolean).length;
@@ -85,7 +115,6 @@ export default function ReviewPage() {
               className="text-red-600 dark:text-red-400"
             />
           </div>
-
           <div className="flex flex-col gap-1">
             <span className="text-sm font-semibold text-slate-700 dark:text-red-300">
               Time is up
@@ -103,7 +132,7 @@ export default function ReviewPage() {
       </p>
 
       <div className="space-y-3 w-full">
-        {exam.questions.map((q, i) => {
+        {questions.map((q, i) => {
           const userAnswer = answers[i];
           const isFlagged = flagged[i];
           const isAnswered = Boolean(userAnswer);

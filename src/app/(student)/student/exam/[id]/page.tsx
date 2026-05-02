@@ -6,7 +6,9 @@ import { useParams, useRouter } from "next/navigation";
 import ExamShell from "@/components/exam/ExamShell";
 import ExamSidebar from "@/components/exam/ExamSidebar";
 import PageHeader from "@/components/layout/PageHeader";
+
 import Button from "@/components/ui/Button";
+import Loader from "@/components/ui/Loader";
 
 import { exams } from "@/mock/exams";
 import { Clock, AlertCircle } from "lucide-react";
@@ -15,8 +17,8 @@ import { saveExamResult } from "@/helpers/exam/exam.service";
 import { useAuth } from "@/context/AuthContext";
 
 import { useExamStore } from "@/store/exam.store";
-
 import { useExamSettings } from "@/hooks/useExamSettings";
+import { shuffleIndices, deriveQuestions } from "@/helpers/exam/examShuffle";
 
 export default function ExamPage() {
   const { id } = useParams();
@@ -34,6 +36,8 @@ export default function ExamPage() {
     timeLeft,
     isTimeUp,
     isCompleted,
+    questionOrder,
+    optionOrder,
     setExam,
     setTimeLeft,
     setTimeUp,
@@ -42,35 +46,22 @@ export default function ExamPage() {
     setCurrent,
     setAnswer,
     toggleFlag,
+    setQuestionOrder,
+    setOptionOrder,
   } = useExamStore();
 
-  const { shuffleQuestions, allowReview } = useExamSettings();
+  const { shuffleQuestions, allowReview, isSettingsLoaded } = useExamSettings();
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const questions = useMemo(() => {
-    if (!exam) return [];
-
-    if (!shuffleQuestions) return exam.questions;
-
-    const shuffled = [...exam.questions];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-
-    return shuffled;
-  }, [exam, shuffleQuestions]);
-
-  const safeIndex = Math.min(current, questions.length - 1);
-  const question = questions[safeIndex];
 
   const examIdValue = exam?.id;
   const examDurationSeconds = (exam?.duration ?? 60) * 60;
 
   useEffect(() => {
-    if (!examIdValue) return;
+    if (!examIdValue || !exam || !isSettingsLoaded) return;
 
-    if (examId !== examIdValue || isCompleted) {
+    const needsReset = examId !== examIdValue || isCompleted;
+
+    if (needsReset) {
       reset();
       setExam(examIdValue);
       setTimeLeft(examDurationSeconds);
@@ -78,7 +69,37 @@ export default function ExamPage() {
       setExam(examIdValue);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [examIdValue]);
+  }, [examIdValue, isSettingsLoaded]);
+
+  useEffect(() => {
+    if (!examIdValue || !exam || !isSettingsLoaded) return;
+    if (examId !== examIdValue) return;
+    if (questionOrder.length === exam.questions.length) return;
+
+    if (shuffleQuestions) {
+      const qOrder = shuffleIndices(exam.questions.length);
+      const oOrder: Record<number, number[]> = {};
+      qOrder.forEach((_origIdx, displayIdx) => {
+        oOrder[displayIdx] = shuffleIndices(
+          exam.questions[qOrder[displayIdx]].options.length,
+        );
+      });
+      setQuestionOrder(qOrder);
+      setOptionOrder(oOrder);
+    } else {
+      setQuestionOrder([]);
+      setOptionOrder({});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [examIdValue, examId, shuffleQuestions, isSettingsLoaded]);
+
+  const questions = useMemo(() => {
+    if (!exam) return [];
+    return deriveQuestions(exam, questionOrder, optionOrder, shuffleQuestions);
+  }, [exam, questionOrder, optionOrder, shuffleQuestions]);
+
+  const safeIndex = Math.min(current, Math.max(0, questions.length - 1));
+  const question = questions[safeIndex];
 
   const handleDirectSubmit = useCallback(async () => {
     if (!exam || !uid || isSubmitting) return;
@@ -87,7 +108,6 @@ export default function ExamPage() {
       setIsSubmitting(true);
 
       let correct = 0;
-
       questions.forEach((q, i) => {
         if (answers[i] === q.answer) correct++;
       });
@@ -107,7 +127,6 @@ export default function ExamPage() {
       setCompleted(true);
 
       const data = encodeURIComponent(JSON.stringify(answers));
-
       router.push(`/student/results/${exam.id}?data=${data}`);
     } finally {
       setIsSubmitting(false);
@@ -140,7 +159,9 @@ export default function ExamPage() {
     if (allowReview) {
       router.push(`/student/exam/${exam.id}/review`);
     } else {
-      handleDirectSubmit();
+      router.push(
+        `/student/results/${exam.id}?data=${encodeURIComponent(JSON.stringify(answers))}`,
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exam, answers, uid, router, setTimeUp, setCompleted]);
@@ -166,7 +187,6 @@ export default function ExamPage() {
     const h = Math.floor(s / 3600);
     const m = Math.floor((s % 3600) / 60);
     const sec = s % 60;
-
     return `${h.toString().padStart(2, "0")}:${m
       .toString()
       .padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
@@ -174,25 +194,31 @@ export default function ExamPage() {
 
   const isLowTime = timeLeft > 0 && timeLeft <= 90;
   const answeredCount = Object.keys(answers).length;
-  const totalQuestions = questions.length ?? 0;
+  const totalQuestions = questions.length;
+
+  const handleSubmitOrReview = () => {
+    if (allowReview) {
+      router.push(`/student/exam/${exam!.id}/review`);
+    } else {
+      handleDirectSubmit();
+    }
+  };
+
+  if (!isSettingsLoaded) {
+    <Loader fullPage size="lg" label="Loading exam..." />;
+  }
 
   if (!exam) {
     return (
       <ExamShell
         sidebar={
           <ExamSidebar
-            total={totalQuestions}
+            total={0}
             current={current}
             answers={answers}
             flagged={flagged}
             onJump={setCurrent}
-            onSubmit={() => {
-              if (allowReview) {
-                router.push(`/student/exam/${id}/review`);
-              } else {
-                handleDirectSubmit();
-              }
-            }}
+            onSubmit={handleSubmitOrReview}
             onToggleFlag={toggleFlag}
           />
         }
@@ -205,10 +231,6 @@ export default function ExamPage() {
     );
   }
 
-  const handleAnswer = (value: string) => {
-    setAnswer(safeIndex, value);
-  };
-
   return (
     <ExamShell
       sidebar={
@@ -218,13 +240,7 @@ export default function ExamPage() {
           answers={answers}
           flagged={flagged}
           onJump={setCurrent}
-          onSubmit={() => {
-            if (allowReview) {
-              router.push(`/student/exam/${exam.id}/review`);
-            } else {
-              handleDirectSubmit();
-            }
-          }}
+          onSubmit={handleSubmitOrReview}
           onToggleFlag={toggleFlag}
         />
       }
@@ -272,7 +288,7 @@ export default function ExamPage() {
             return (
               <button
                 key={opt}
-                onClick={() => handleAnswer(opt)}
+                onClick={() => setAnswer(safeIndex, opt)}
                 className={`w-full text-left flex items-center gap-4 p-4 rounded-xl border transition-all ${
                   isSelected
                     ? "border-blue-500 bg-blue-50 dark:bg-blue-500/10 shadow-sm shadow-blue-100 dark:shadow-none"
@@ -331,13 +347,7 @@ export default function ExamPage() {
           {safeIndex === questions.length - 1 ? (
             <Button
               variant="primary"
-              onClick={() => {
-                if (allowReview) {
-                  router.push(`/student/exam/${exam.id}/review`);
-                } else {
-                  handleDirectSubmit();
-                }
-              }}
+              onClick={handleSubmitOrReview}
               disabled={isSubmitting}
             >
               {allowReview ? (

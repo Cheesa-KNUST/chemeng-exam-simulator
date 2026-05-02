@@ -10,14 +10,19 @@ export function useExamSettings() {
   const [settings, setSettings] = useState<UserSettings>({
     notifications: true,
     showAnswers: true,
-    shuffleQuestions: false,
+    shuffleQuestions: true,
     allowReview: true,
   });
+
+  const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
 
   useEffect(() => {
     if (!user) return;
 
-    const unsub = listenToUserSettings(user.uid, setSettings);
+    const unsub = listenToUserSettings(user.uid, (s) => {
+      setSettings(s);
+      setIsSettingsLoaded(true);
+    });
     return () => unsub();
   }, [user]);
 
@@ -27,8 +32,9 @@ export function useExamSettings() {
       shuffleQuestions: settings.shuffleQuestions,
       allowReview: settings.allowReview,
       notifications: settings.notifications,
+      isSettingsLoaded,
     };
-  }, [settings]);
+  }, [settings, isSettingsLoaded]);
 
   return derived;
 }

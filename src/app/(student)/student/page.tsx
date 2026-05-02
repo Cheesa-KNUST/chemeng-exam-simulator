@@ -13,7 +13,7 @@ import RecentExamsSection from "@/app/(student)/features/RecentExamsSection";
 
 import PerformanceChart from "@/components/charts/PerformanceChart";
 import ScoreDistributionChart from "@/components/charts/ScoreDistributionChart";
-// import ActivityChart from "@/components/charts/ActivityChart";
+import ActivityChart from "@/components/charts/ActivityChart";
 
 import Skeleton from "@/components/ui/Skeleton";
 
@@ -25,7 +25,7 @@ export default function HomePage() {
     stats,
     performance,
     distribution,
-    // activity,
+    activity,
     trends,
     data,
   } = useDashboardData();
@@ -68,9 +68,9 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* <SectionTitle
+      <SectionTitle
         title="Study Activity"
-        description="Your weekly engagement and exam participation patterns"
+        description="Your daily engagement and exam participation patterns"
       />
 
       {loading ? (
@@ -79,14 +79,18 @@ export default function HomePage() {
         <div className="mb-6">
           <ActivityChart data={activity} />
         </div>
-      )} */}
+      )}
 
       <SectionTitle
         title="Performance Breakdown"
-        description="Detailed analysis of your strengths and areas for improvement (Last 5)"
+        description="Detailed analysis of your strengths and areas for improvement (Last 6)"
       />
 
-      <RecentExamsSection data={data} />
+      {loading ? (
+        <Skeleton className="h-72 mb-6" />
+      ) : (
+        <RecentExamsSection data={data} />
+      )}
 
       {error && (
         <div className="bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl p-4 text-sm font-medium mt-4">

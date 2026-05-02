@@ -3,7 +3,7 @@ import Card from "./Card";
 
 type Trend = {
   value: string;
-  positive: boolean;
+  positive: boolean | null;
 };
 
 type Props = {
@@ -14,13 +14,7 @@ type Props = {
   accent?: string;
 };
 
-export default function StatCard({
-  title,
-  value,
-  icon,
-  trend,
-  accent = "bg-blue-500",
-}: Props) {
+export default function StatCard({ title, value, icon, trend, accent }: Props) {
   return (
     <Card className="relative overflow-hidden">
       <div className={`absolute bottom-0 left-0 w-full h-1 ${accent}`} />
@@ -35,13 +29,17 @@ export default function StatCard({
           {trend && (
             <p
               className={`text-xs mt-2 font-medium flex items-center gap-1 ${
-                trend.positive
+                trend.positive === true
                   ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-red-500 dark:text-red-400"
+                  : trend.positive === false
+                    ? "text-red-500 dark:text-red-400"
+                    : "text-slate-500 dark:text-slate-400"
               }`}
             >
-              <span>{trend.positive ? "↑" : "↓"}</span>
-              {trend.value} from last session
+              {trend.positive === true && <span>↑</span>}
+              {trend.positive === false && <span>↓</span>}
+
+              {trend.value}
             </p>
           )}
         </div>

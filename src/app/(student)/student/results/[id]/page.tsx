@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useParams, useSearchParams } from "next/navigation";
 import AppShell from "@/components/layout/AppShell";
 import PageHeader from "@/components/layout/PageHeader";
@@ -7,15 +8,26 @@ import type { ExamQuestion } from "@/mock/exams";
 import { exams } from "@/mock/exams";
 import { CheckCircle2, XCircle, MinusCircle, Trophy } from "lucide-react";
 import { useExamSettings } from "@/hooks/useExamSettings";
+import { useExamStore } from "@/store/exam.store";
+import { deriveQuestions } from "@/helpers/exam/examShuffle";
 
 export default function ResultsPage() {
   const { id } = useParams();
   const searchParams = useSearchParams();
 
-  const exam = exams.find((e) => e.id === id);
+  const exam = useMemo(() => exams.find((e) => e.id === id), [id]);
   const raw = searchParams.get("data");
-  const answers = raw ? JSON.parse(decodeURIComponent(raw)) : {};
-  const { showAnswers } = useExamSettings();
+  const answers: Record<number, string> = raw
+    ? JSON.parse(decodeURIComponent(raw))
+    : {};
+
+  const { showAnswers, shuffleQuestions } = useExamSettings();
+  const { questionOrder, optionOrder } = useExamStore();
+
+  const questions = useMemo(() => {
+    if (!exam) return [] as ExamQuestion[];
+    return deriveQuestions(exam, questionOrder, optionOrder, shuffleQuestions);
+  }, [exam, questionOrder, optionOrder, shuffleQuestions]);
 
   if (!exam) {
     return (
@@ -29,11 +41,11 @@ export default function ResultsPage() {
   }
 
   let score = 0;
-  exam.questions.forEach((q: ExamQuestion, i: number) => {
+  questions.forEach((q, i) => {
     if (answers[i] === q.answer) score++;
   });
 
-  const percent = Math.round((score / exam.questions.length) * 100);
+  const percent = Math.round((score / questions.length) * 100);
 
   const grade =
     percent >= 80
@@ -72,7 +84,7 @@ export default function ResultsPage() {
             <div className="flex items-center gap-2 mb-1">
               <Trophy size={16} className="text-amber-400" />
               <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                {score} / {exam.questions.length} correct
+                {score} / {questions.length} correct
               </p>
             </div>
 
@@ -98,9 +110,8 @@ export default function ResultsPage() {
                 </p>
                 <p className="font-semibold text-red-500 dark:text-red-400">
                   {
-                    exam.questions.filter(
-                      (q: ExamQuestion, i: number) =>
-                        answers[i] && answers[i] !== q.answer,
+                    questions.filter(
+                      (q, i) => answers[i] && answers[i] !== q.answer,
                     ).length
                   }
                 </p>
@@ -110,11 +121,7 @@ export default function ResultsPage() {
                   Skipped
                 </p>
                 <p className="font-semibold text-slate-500 dark:text-slate-400">
-                  {
-                    exam.questions.filter(
-                      (_: ExamQuestion, i: number) => !answers[i],
-                    ).length
-                  }
+                  {questions.filter((_, i) => !answers[i]).length}
                 </p>
               </div>
             </div>
@@ -127,7 +134,7 @@ export default function ResultsPage() {
       </p>
 
       <div className="space-y-3">
-        {exam.questions.map((q: ExamQuestion, i: number) => {
+        {questions.map((q, i) => {
           const userAnswer = answers[i];
           const correct = q.answer;
           const isCorrect = userAnswer === correct;

@@ -5,6 +5,7 @@ import {
   BookOpen,
   Settings,
   HelpCircle,
+  Sparkles,
 } from "lucide-react";
 
 export const topNavItems = [
@@ -35,6 +36,11 @@ export const bottomNavItems = [
     label: "Settings",
     href: "/student/settings",
     icon: Settings,
+  },
+  {
+    label: "JudeAI",
+    href: "/student/jude",
+    icon: Sparkles,
   },
   {
     label: "Help",

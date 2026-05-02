@@ -10,6 +10,7 @@ type ExamSession = {
   timeLeft: number;
   isTimeUp: boolean;
   isCompleted: boolean;
+
   questionOrder: number[];
   optionOrder: Record<number, number[]>;
 

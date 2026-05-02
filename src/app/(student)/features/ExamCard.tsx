@@ -1,5 +1,6 @@
 import { getScoreColor, getProgressBarColor } from "./dashboardUtils";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function ExamCard({ exam }: { exam: any }) {
   const percent = Math.round((exam.correct / exam.total) * 100);
 
@@ -23,7 +24,7 @@ export default function ExamCard({ exam }: { exam: any }) {
           line-clamp-1 pr-3
         "
         >
-          {exam.course}
+          Exam Title: {exam.course}
         </h3>
 
         <div

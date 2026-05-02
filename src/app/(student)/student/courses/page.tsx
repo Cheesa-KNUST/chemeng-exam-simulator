@@ -9,6 +9,7 @@ import AppShell from "@/components/layout/AppShell";
 import PageHeader from "@/components/layout/PageHeader";
 import SectionTitle from "@/components/ui/SectionTitle";
 import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
 import EmptyState from "@/components/ui/EmptyState";
 import {
   Clock,
@@ -20,20 +21,35 @@ import {
 } from "lucide-react";
 
 export default function CoursesPage() {
-  const courses = getCourses();
+  const allCourses = getCourses();
+  const [courseQuery, setCourseQuery] = useState("");
+  const [examQuery, setExamQuery] = useState("");
+
+  const courses = allCourses.filter((course) =>
+    course.title.toLowerCase().includes(courseQuery.toLowerCase()),
+  );
+
   const [selectedCourse, setSelectedCourse] = useState<
     (typeof courses)[0] | null
   >(null);
 
-  const courseExams = selectedCourse
-    ? getExamsByCourse(selectedCourse.slug)
-    : [];
+  const baseExams = selectedCourse ? getExamsByCourse(selectedCourse.slug) : [];
+
+  const courseExams = baseExams.filter((exam) =>
+    exam.title.toLowerCase().includes(examQuery.toLowerCase()),
+  );
 
   return (
     <AppShell>
       <PageHeader
         title="Courses"
         subtitle="Select a course to begin practicing exams"
+      />
+
+      <Input
+        placeholder="Search courses..."
+        value={courseQuery}
+        onChange={(e) => setCourseQuery(e.target.value)}
       />
 
       <div className="mt-2 mb-6 max-h-[28vh] overflow-y-auto no-scrollbar">
@@ -44,7 +60,10 @@ export default function CoursesPage() {
             return (
               <button
                 key={course.slug}
-                onClick={() => setSelectedCourse(course)}
+                onClick={() => {
+                  setSelectedCourse(course);
+                  setExamQuery("");
+                }}
                 className={`text-left group rounded-2xl p-5 transition-all border ${
                   isActive
                     ? "border-blue-500 bg-blue-50 dark:bg-blue-500/10 shadow-md shadow-blue-200/60 dark:shadow-blue-900/20"
@@ -81,6 +100,14 @@ export default function CoursesPage() {
         title="Available Exams"
         description="Look through and select the exams of your choice"
       />
+
+      {selectedCourse && (
+        <Input
+          placeholder="Search exams..."
+          value={examQuery}
+          onChange={(e) => setExamQuery(e.target.value)}
+        />
+      )}
 
       <div className="mt-2 mb-6 max-h-[40vh] overflow-y-auto no-scrollbar">
         {!selectedCourse ? (

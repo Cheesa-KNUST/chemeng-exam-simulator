@@ -1,12 +1,19 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import AppShell from "@/components/layout/AppShell";
-import { Notification, listenToNotifications } from "@/context/userService";
+import {
+  Notification,
+  listenToNotifications,
+  listenToUserSettings,
+} from "@/context/userService";
 import PageHeader from "@/components/layout/PageHeader";
 import Loader from "@/components/ui/Loader";
+import Button from "@/components/ui/Button";
 import EmptyState from "@/components/ui/EmptyState";
-import { CheckCircle2, AlertTriangle, Info, Bell } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { CheckCircle2, AlertTriangle, Info, Bell, BellOff } from "lucide-react";
 
 function getTypeStyles(type?: string) {
   switch (type) {
@@ -20,6 +27,7 @@ function getTypeStyles(type?: string) {
           />
         ),
       };
+
     case "warning":
       return {
         card: "border-amber-200 dark:border-amber-800/50 bg-amber-50 dark:bg-amber-900/10",
@@ -30,6 +38,7 @@ function getTypeStyles(type?: string) {
           />
         ),
       };
+
     case "info":
     default:
       return {
@@ -44,17 +53,40 @@ function getTypeStyles(type?: string) {
   }
 }
 
+type UserSettings = {
+  notifications: boolean;
+};
+
 export default function NotificationsPage() {
+  const { user } = useAuth();
+
+  const [settings, setSettings] = useState<UserSettings>({
+    notifications: true,
+  });
+
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!user) return;
+
+    const unsub = listenToUserSettings(user.uid, (data) => {
+      setSettings(data);
+    });
+
+    return () => unsub();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user || !settings.notifications) return;
+
     const unsub = listenToNotifications((data) => {
       setNotifications(data);
       setLoading(false);
     });
+
     return () => unsub();
-  }, []);
+  }, [user, settings.notifications]);
 
   return (
     <AppShell>
@@ -70,22 +102,36 @@ export default function NotificationsPage() {
           </div>
         )}
 
-        {!loading && notifications.length === 0 && (
+        {!loading && !settings.notifications && (
           <EmptyState
-            icon={<Bell size={22} />}
-            title="No notifications yet"
-            description="Updates and alerts from your lecturers will appear here"
+            icon={<BellOff size={22} />}
+            title="Notifications are turned off"
+            description="You are not receiving notifications. Enable them in settings to stay updated."
+            action={
+              <Link href="/student/settings">
+                <Button variant="primary">Go to settings</Button>
+              </Link>
+            }
           />
         )}
 
-        {!loading && notifications.length > 0 && (
+        {!loading && settings.notifications && notifications.length === 0 && (
+          <EmptyState
+            icon={<Bell size={22} />}
+            title="No notifications yet"
+            description="Updates will appear here"
+          />
+        )}
+
+        {!loading && settings.notifications && notifications.length > 0 && (
           <div className="space-y-3">
             {notifications.map((n) => {
               const { card, icon } = getTypeStyles(n.type);
+
               return (
                 <div
                   key={n.id}
-                  className={`p-4 rounded-xl border transition-opacity ${card} ${
+                  className={`p-4 rounded-xl border ${card} ${
                     n.read ? "opacity-50" : "opacity-100"
                   }`}
                 >
@@ -96,14 +142,14 @@ export default function NotificationsPage() {
                         <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
                           {n.title}
                         </p>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
                           {n.message}
                         </p>
                       </div>
                     </div>
 
                     {!n.read && (
-                      <span className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0" />
+                      <span className="w-2 h-2 rounded-full bg-blue-500 mt-1.5" />
                     )}
                   </div>
                 </div>

@@ -27,7 +27,16 @@ export default function PerformanceChart({ data }: Props) {
             <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
             <XAxis dataKey="name" stroke="#94a3b8" />
             <YAxis stroke="#94a3b8" />
-            <Tooltip />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#0f172a",
+                border: "1px solid #334155",
+                borderRadius: "12px",
+                color: "#f8fafc",
+              }}
+              labelStyle={{ color: "#94a3b8" }}
+              itemStyle={{ color: "#60a5fa" }}
+            />
             <Line
               type="monotone"
               dataKey="score"
