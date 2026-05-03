@@ -8,7 +8,7 @@ import { CheckCircle2, XCircle, MinusCircle, Trophy } from "lucide-react";
 import { useExamSettings } from "@/hooks/useExamSettings";
 import { useExamStore } from "@/store/exam.store";
 import { useExam } from "@/helpers/exam/exam.service";
-import { deriveQuestions } from "@/helpers/exam/examShuffle";
+import { deriveQuestions, isAnswerCorrect } from "@/helpers/exam/examShuffle";
 import Loader from "@/components/ui/Loader";
 
 export default function ResultsPage() {
@@ -44,11 +44,9 @@ export default function ResultsPage() {
     );
   }
 
-  let score = 0;
-  questions.forEach((q, i) => {
-    if (answers[i] === q.answer) score++;
-  });
-
+  const score = questions.filter((q, i) =>
+    isAnswerCorrect(q, answers[i]),
+  ).length;
   const percent = Math.round((score / questions.length) * 100);
 
   const grade =
@@ -115,7 +113,7 @@ export default function ResultsPage() {
                 <p className="font-semibold text-red-500 dark:text-red-400">
                   {
                     questions.filter(
-                      (q, i) => answers[i] && answers[i] !== q.answer,
+                      (q, i) => answers[i] && !isAnswerCorrect(q, answers[i]),
                     ).length
                   }
                 </p>
@@ -141,7 +139,7 @@ export default function ResultsPage() {
         {questions.map((q, i) => {
           const userAnswer = answers[i];
           const correct = q.answer;
-          const isCorrect = userAnswer === correct;
+          const isCorrect = isAnswerCorrect(q, userAnswer); // ← updated
           const isSkipped = !userAnswer;
 
           return (
@@ -179,6 +177,15 @@ export default function ResultsPage() {
                   <p className="text-sm font-medium text-slate-800 dark:text-slate-100 leading-snug">
                     {i + 1}. {q.question}
                   </p>
+
+                  {q.kind === "pictorial_mcq" && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={q.image}
+                      alt="Question illustration"
+                      className="mt-2 max-h-40 rounded-lg border border-slate-200 dark:border-slate-700 object-contain bg-white dark:bg-slate-900 p-1"
+                    />
+                  )}
 
                   <div className="mt-2 flex flex-col gap-1">
                     <p className="text-xs text-slate-500 dark:text-slate-400">

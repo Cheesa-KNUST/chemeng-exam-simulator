@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { getCourses, getExamsByCourse } from "@/helpers/courses/course.service";
 
@@ -11,6 +11,7 @@ import SectionTitle from "@/components/ui/SectionTitle";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import EmptyState from "@/components/ui/EmptyState";
+
 import {
   Clock,
   HelpCircle,
@@ -20,22 +21,76 @@ import {
   ClipboardList,
 } from "lucide-react";
 
+type Course = {
+  slug: string;
+  title: string;
+  description: string;
+  exams: number;
+};
+
+type Exam = {
+  id: string;
+  title: string;
+  duration: number;
+  questions: [];
+  type: string;
+  difficulty: string;
+};
+
 export default function CoursesPage() {
-  const allCourses = getCourses();
+  const [allCourses, setAllCourses] = useState<Course[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [exams, setExams] = useState<Exam[]>([]);
+
+  const [loadingCourses, setLoadingCourses] = useState(true);
+  const [loadingExams, setLoadingExams] = useState(false);
+
   const [courseQuery, setCourseQuery] = useState("");
   const [examQuery, setExamQuery] = useState("");
 
-  const courses = allCourses.filter((course) =>
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const data = await getCourses();
+        if (!cancelled) setAllCourses(data);
+      } finally {
+        if (!cancelled) setLoadingCourses(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!selectedCourse) return;
+
+    let cancelled = false;
+
+    (async () => {
+      if (!cancelled) setLoadingExams(true);
+
+      try {
+        const data = await getExamsByCourse(selectedCourse.slug);
+        if (!cancelled) setExams(data);
+      } finally {
+        if (!cancelled) setLoadingExams(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCourse]);
+
+  const filteredCourses = allCourses.filter((course) =>
     course.title.toLowerCase().includes(courseQuery.toLowerCase()),
   );
 
-  const [selectedCourse, setSelectedCourse] = useState<
-    (typeof courses)[0] | null
-  >(null);
-
-  const baseExams = selectedCourse ? getExamsByCourse(selectedCourse.slug) : [];
-
-  const courseExams = baseExams.filter((exam) =>
+  const filteredExams = exams.filter((exam) =>
     exam.title.toLowerCase().includes(examQuery.toLowerCase()),
   );
 
@@ -53,19 +108,21 @@ export default function CoursesPage() {
       />
 
       <div className="mt-2 mb-6 max-h-[28vh] overflow-y-auto no-scrollbar">
-        {courses.length === 0 ? (
+        {loadingCourses ? (
+          <p className="text-sm text-slate-400">Loading courses...</p>
+        ) : filteredCourses.length === 0 ? (
           <EmptyState
             icon={<BookOpen size={22} />}
             title="No courses found"
             description={
               courseQuery
-                ? "No courses match your search. Try a different keyword."
-                : "There are no courses available at the moment."
+                ? "No courses match your search."
+                : "No courses available."
             }
           />
         ) : (
-          <div className="mt-4 mb-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {courses.map((course) => {
+          <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filteredCourses.map((course) => {
               const isActive = course.slug === selectedCourse?.slug;
 
               return (
@@ -75,29 +132,20 @@ export default function CoursesPage() {
                     setSelectedCourse(course);
                     setExamQuery("");
                   }}
-                  className={`text-left group rounded-2xl p-5 transition-all border ${
+                  className={`text-left rounded-2xl p-5 border transition ${
                     isActive
-                      ? "border-blue-500 bg-blue-50 dark:bg-blue-500/10 shadow-md shadow-blue-200/60 dark:shadow-blue-900/20"
-                      : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm"
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-500/10"
+                      : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-blue-400"
                   }`}
                 >
-                  <h3
-                    className={`text-base font-semibold transition ${
-                      isActive
-                        ? "text-blue-600 dark:text-blue-400"
-                        : "text-slate-800 dark:text-slate-100"
-                    }`}
-                  >
-                    {course.title}
-                  </h3>
+                  <h3 className="font-semibold">{course.title}</h3>
 
-                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                  <p className="text-sm text-slate-500 mt-2">
                     {course.description}
                   </p>
 
-                  <div className="mt-4 text-xs text-slate-400 dark:text-slate-500 font-medium">
-                    {course.exams} {course.exams === 1 ? "Exam" : "Exams"}{" "}
-                    available
+                  <div className="mt-3 text-xs text-slate-400">
+                    {course.exams} exams
                   </div>
                 </button>
               );
@@ -110,7 +158,7 @@ export default function CoursesPage() {
 
       <SectionTitle
         title="Available Exams"
-        description="Look through and select the exams of your choice"
+        description="Select an exam to begin"
       />
 
       {selectedCourse && (
@@ -121,67 +169,55 @@ export default function CoursesPage() {
         />
       )}
 
-      <div className="mt-2 mb-6 max-h-[40vh] overflow-y-auto no-scrollbar">
+      <div className="mt-4">
         {!selectedCourse ? (
           <EmptyState
             icon={<BookOpen size={22} />}
             title="No course selected"
-            description="Please select a course above to view available exams"
+            description="Select a course above"
           />
-        ) : courseExams.length === 0 ? (
+        ) : loadingExams ? (
+          <p className="text-sm text-slate-400">Loading exams...</p>
+        ) : filteredExams.length === 0 ? (
           <EmptyState
             icon={<ClipboardList size={22} />}
-            title="No exams yet"
-            description="This course has no exams available at the moment"
+            title="No exams found"
+            description="Try another search"
           />
         ) : (
-          <div className="grid md:grid-cols-2 gap-5 mt-2">
-            {courseExams.map((exam) => (
+          <div className="grid md:grid-cols-2 gap-5">
+            {filteredExams.map((exam) => (
               <div
                 key={exam.id}
-                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 hover:shadow-md dark:hover:shadow-slate-900/40 transition-shadow"
+                className="bg-white dark:bg-slate-800 rounded-2xl p-5"
               >
-                <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">
-                  {exam.title}
-                </h3>
+                <h3 className="font-semibold">{exam.title}</h3>
 
-                <div className="mt-3 grid grid-cols-2 gap-y-2 gap-x-4">
-                  <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                    <Clock
-                      size={14}
-                      className="shrink-0 text-slate-400 dark:text-slate-500"
-                    />
-                    {exam.duration} {exam.duration === 1 ? "min" : "mins"}
+                <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-slate-500">
+                  <div className="flex items-center gap-2">
+                    <Clock size={14} />
+                    {exam.duration} mins
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                    <HelpCircle
-                      size={14}
-                      className="shrink-0 text-slate-400 dark:text-slate-500"
-                    />
-                    {exam.questions.length}{" "}
-                    {exam.questions.length === 1 ? "question" : "questions"}
+
+                  <div className="flex items-center gap-2">
+                    <HelpCircle size={14} />
+                    {exam.questions.length} questions
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                    <Layers
-                      size={14}
-                      className="shrink-0 text-slate-400 dark:text-slate-500"
-                    />
+
+                  <div className="flex items-center gap-2">
+                    <Layers size={14} />
                     {exam.type}
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
-                    <Flame
-                      size={14}
-                      className="shrink-0 text-slate-400 dark:text-slate-500"
-                    />
+
+                  <div className="flex items-center gap-2">
+                    <Flame size={14} />
                     {exam.difficulty}
                   </div>
                 </div>
 
                 <div className="mt-5">
                   <Link href={`/student/exam/${exam.id}`}>
-                    <Button variant="primary" className="w-full justify-center">
-                      Start Exam
-                    </Button>
+                    <Button className="w-full">Start Exam</Button>
                   </Link>
                 </div>
               </div>

@@ -1,19 +1,24 @@
-import { courses } from "@/mock/courses";
-import { exams } from "@/mock/exams";
+import { courses as mockCourses } from "@/mock/courses";
+import { exams as mockExams } from "@/mock/exams";
 
-/**
- * Step 1: Replace mock imports with a service layer.
- * Later this will be swapped with Firestore/API.
- */
+const API_URL = "process.env.NEXT_PUBLIC_API_URL";
 
-export function getCourses() {
-  return courses;
+export async function getCourses() {
+  try {
+    const res = await fetch(`${API_URL}/courses`);
+    if (!res.ok) throw new Error("Failed");
+    return await res.json();
+  } catch {
+    return mockCourses;
+  }
 }
 
-export function getExams() {
-  return exams;
-}
-
-export function getExamsByCourse(courseSlug: string) {
-  return exams.filter((e) => e.courseSlug === courseSlug);
+export async function getExamsByCourse(courseSlug: string) {
+  try {
+    const res = await fetch(`${API_URL}/exams?courseSlug=${courseSlug}`);
+    if (!res.ok) throw new Error("Failed");
+    return await res.json();
+  } catch {
+    return mockExams.filter((e) => e.courseSlug === courseSlug);
+  }
 }

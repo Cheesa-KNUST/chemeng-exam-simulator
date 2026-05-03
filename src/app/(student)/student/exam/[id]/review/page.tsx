@@ -9,7 +9,14 @@ import { CheckCircle2, XCircle, Flag, AlertTriangle } from "lucide-react";
 import ReviewShell from "@/components/review/ReviewShell";
 import Loader from "@/components/ui/Loader";
 import { useExamSettings } from "@/hooks/useExamSettings";
-import { deriveQuestions } from "@/helpers/exam/examShuffle";
+import { deriveQuestions, isAnswerCorrect } from "@/helpers/exam/examShuffle";
+
+const KIND_LABEL: Record<string, string> = {
+  mcq: "Multiple Choice",
+  true_false: "True / False",
+  fill_in: "Fill in",
+  pictorial_mcq: "Image Question",
+};
 
 export default function ReviewPage() {
   const { id } = useParams();
@@ -50,11 +57,9 @@ export default function ReviewPage() {
     try {
       setIsSubmitting(true);
 
-      let correct = 0;
-      questions.forEach((q, i) => {
-        if (answers[i] === q.answer) correct++;
-      });
-
+      const correct = questions.filter((q, i) =>
+        isAnswerCorrect(q, answers[i]),
+      ).length;
       const total = questions.length;
       const percent = Math.round((correct / total) * 100);
 
@@ -167,7 +172,7 @@ export default function ReviewPage() {
                       {i + 1}
                     </span>
                     {isAnswered ? (
-                      <span className="inline-flex items-center gap-4 text-sm font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-400 py-1.5">
+                      <span className="inline-flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-emerald-700 dark:text-emerald-400 py-1.5">
                         <CheckCircle2 size={11} />
                         Answered
                       </span>
@@ -179,17 +184,32 @@ export default function ReviewPage() {
                     )}
                   </div>
 
-                  {isFlagged && (
-                    <span className="inline-flex items-center gap-4 text-sm font-bold uppercase tracking-wide text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/40 border border-amber-200 dark:border-amber-800/50 px-5 py-1.5 rounded-full">
-                      <Flag size={10} />
-                      Flagged
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500">
+                      {KIND_LABEL[q.kind] ?? q.kind}
                     </span>
-                  )}
+
+                    {isFlagged && (
+                      <span className="inline-flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/40 border border-amber-200 dark:border-amber-800/50 px-3 py-1.5 rounded-full">
+                        <Flag size={10} />
+                        Flagged
+                      </span>
+                    )}
+                  </div>
                 </div>
 
-                <p className="text-md font-medium text-slate-800 dark:text-slate-100 leading-relaxed mb-4">
+                <p className="text-md font-medium text-slate-800 dark:text-slate-100 leading-relaxed mb-3">
                   {q.question}
                 </p>
+
+                {q.kind === "pictorial_mcq" && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={q.image}
+                    alt="Question illustration"
+                    className="w-full max-h-56 object-contain rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 mb-4"
+                  />
+                )}
 
                 <div className="flex items-center gap-3 mb-2.5">
                   <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 shrink-0">

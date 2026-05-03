@@ -11,7 +11,7 @@ export default function RecentExamsSection({ data }: any) {
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     )
-    .slice(0, 6);
+    .slice(0, 3);
 
   if (data.length === 0) {
     return (

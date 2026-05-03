@@ -98,7 +98,7 @@ export default function NotificationsPage() {
 
         {loading && (
           <div className="flex justify-center py-10">
-            <Loader />
+            <Loader size="lg" label="Loading notifications ......" />
           </div>
         )}
 

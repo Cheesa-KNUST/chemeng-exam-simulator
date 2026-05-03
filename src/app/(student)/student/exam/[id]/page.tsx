@@ -10,6 +10,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import Button from "@/components/ui/Button";
 import Loader from "@/components/ui/Loader";
 import EmptyState from "@/components/ui/EmptyState";
+import QuestionRenderer from "@/components/exam/QuestionRenderer";
 
 import { Clock, AlertCircle } from "lucide-react";
 
@@ -18,7 +19,11 @@ import { useAuth } from "@/context/AuthContext";
 
 import { useExamStore } from "@/store/exam.store";
 import { useExamSettings } from "@/hooks/useExamSettings";
-import { shuffleIndices, deriveQuestions } from "@/helpers/exam/examShuffle";
+import {
+  shuffleIndices,
+  deriveQuestions,
+  isAnswerCorrect,
+} from "@/helpers/exam/examShuffle";
 
 export default function ExamPage() {
   const { id } = useParams();
@@ -80,9 +85,10 @@ export default function ExamPage() {
       const qOrder = shuffleIndices(exam.questions.length);
       const oOrder: Record<number, number[]> = {};
       qOrder.forEach((_origIdx, displayIdx) => {
-        oOrder[displayIdx] = shuffleIndices(
-          exam.questions[qOrder[displayIdx]].options.length,
-        );
+        const q = exam.questions[qOrder[displayIdx]];
+        if (q.kind !== "fill_in") {
+          oOrder[displayIdx] = shuffleIndices(q.options.length);
+        }
       });
       setQuestionOrder(qOrder);
       setOptionOrder(oOrder);
@@ -107,11 +113,9 @@ export default function ExamPage() {
     try {
       setIsSubmitting(true);
 
-      let correct = 0;
-      questions.forEach((q, i) => {
-        if (answers[i] === q.answer) correct++;
-      });
-
+      const correct = questions.filter((q, i) =>
+        isAnswerCorrect(q, answers[i]),
+      ).length;
       const total = questions.length;
       const percent = Math.round((correct / total) * 100);
 
@@ -136,11 +140,9 @@ export default function ExamPage() {
   const handleTimeUp = useCallback(async () => {
     if (!exam || !uid) return;
 
-    let correct = 0;
-    questions.forEach((q, i) => {
-      if (answers[i] === q.answer) correct++;
-    });
-
+    const correct = questions.filter((q, i) =>
+      isAnswerCorrect(q, answers[i]),
+    ).length;
     const total = questions.length;
     const percent = Math.round((correct / total) * 100);
 
@@ -281,52 +283,28 @@ export default function ExamPage() {
       </div>
 
       <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6">
-        <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">
-          Question {safeIndex + 1}
-        </p>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">
+            Question {safeIndex + 1}
+          </p>
+          <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500">
+            {question.kind === "mcq" && "Multiple Choice"}
+            {question.kind === "true_false" && "True / False"}
+            {question.kind === "fill_in" && "Fill in"}
+            {question.kind === "pictorial_mcq" && "Image Question"}
+          </span>
+        </div>
 
         <p className="text-slate-800 dark:text-slate-100 text-base font-medium leading-relaxed mb-6">
           {question.question}
         </p>
 
-        <div className="space-y-3">
-          {question.options.map((opt: string, i: number) => {
-            const isSelected = answers[safeIndex] === opt;
-            const label = String.fromCharCode(65 + i);
-
-            return (
-              <button
-                key={opt}
-                onClick={() => setAnswer(safeIndex, opt)}
-                className={`w-full text-left flex items-center gap-4 p-4 rounded-xl border transition-all ${
-                  isSelected
-                    ? "border-blue-500 bg-blue-50 dark:bg-blue-500/10 shadow-sm shadow-blue-100 dark:shadow-none"
-                    : "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 hover:border-blue-300 dark:hover:border-slate-500 hover:bg-white dark:hover:bg-slate-700/50"
-                }`}
-              >
-                <span
-                  className={`w-7 h-7 shrink-0 rounded-lg flex items-center justify-center text-xs font-bold transition-colors ${
-                    isSelected
-                      ? "bg-blue-500 text-white"
-                      : "bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400"
-                  }`}
-                >
-                  {label}
-                </span>
-
-                <span
-                  className={`text-sm leading-snug transition-colors ${
-                    isSelected
-                      ? "text-blue-700 dark:text-blue-300 font-medium"
-                      : "text-slate-700 dark:text-slate-300"
-                  }`}
-                >
-                  {opt}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <QuestionRenderer
+          question={question}
+          questionIndex={safeIndex}
+          userAnswer={answers[safeIndex]}
+          onAnswer={setAnswer}
+        />
 
         <div className="flex items-center justify-between mt-8 pt-5 border-t border-slate-100 dark:border-slate-700">
           <Button

@@ -6,6 +6,8 @@ import SectionTitle from "@/components/ui/SectionTitle";
 import Button from "@/components/ui/Button";
 import Link from "next/link";
 
+import { ArrowRight } from "lucide-react";
+
 import { useDashboardData } from "@/app/(student)/features/useDashboardData";
 
 import StatsSection from "@/app/(student)/features/StatsSection";
@@ -39,10 +41,16 @@ export default function HomePage() {
         subtitle={`Welcome back, ${welcomeName}. Here's your progress overview.`}
         action={
           <Link href="/student/courses">
-            <Button>Start Practice</Button>
+            <Button variant="primary">Start Practice</Button>
           </Link>
         }
       />
+
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl p-4 text-sm font-medium mt-4 mb-4">
+          {error}
+        </div>
+      )}
 
       <SectionTitle
         title="Performance Health"
@@ -83,19 +91,20 @@ export default function HomePage() {
 
       <SectionTitle
         title="Performance Breakdown"
-        description="Detailed analysis of your strengths and areas for improvement (Last 6)"
+        description="Detailed analysis of your strengths and areas for improvement"
+        action={
+          <Link href="/student/history">
+            <Button variant="primary">
+              <ArrowRight size={18} />
+            </Button>
+          </Link>
+        }
       />
 
       {loading ? (
         <Skeleton className="h-72 mb-6" />
       ) : (
         <RecentExamsSection data={data} />
-      )}
-
-      {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl p-4 text-sm font-medium mt-4">
-          {error}
-        </div>
       )}
     </AppShell>
   );

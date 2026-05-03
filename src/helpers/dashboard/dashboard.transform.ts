@@ -6,6 +6,8 @@ import {
   DashboardStats,
 } from "./dashboard.types";
 
+import { ExamHistoryEntry } from "@/context/userService";
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getDate(raw: any): Date {
   if (raw?.toDate) return raw.toDate();
@@ -137,4 +139,41 @@ export function getTrends(data: ExamResult[]) {
     scoreDiff,
     prevExams,
   };
+}
+
+export function getScoreTrend(results: ExamHistoryEntry[]): number | null {
+  if (!results.length) return null;
+
+  const now = new Date();
+
+  const last7Days = new Date(now);
+  last7Days.setDate(now.getDate() - 7);
+
+  const prev14Days = new Date(now);
+  prev14Days.setDate(now.getDate() - 14);
+
+  const toDate = (ts: ExamHistoryEntry["createdAt"]): Date | null => {
+    if (!ts) return null;
+    return ts.toDate();
+  };
+
+  const lastPeriod = results.filter((r) => {
+    const date = toDate(r.createdAt);
+    return date && date >= last7Days;
+  });
+
+  const prevPeriod = results.filter((r) => {
+    const date = toDate(r.createdAt);
+    return date && date >= prev14Days && date < last7Days;
+  });
+
+  const avg = (arr: number[]) =>
+    arr.length === 0
+      ? 0
+      : Math.round(arr.reduce((a, b) => a + b, 0) / arr.length);
+
+  const lastAvg = avg(lastPeriod.map((r) => r.score));
+  const prevAvg = avg(prevPeriod.map((r) => r.score));
+
+  return lastAvg - prevAvg;
 }

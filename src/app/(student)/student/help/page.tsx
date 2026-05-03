@@ -88,7 +88,7 @@ export default function HelpPage() {
           <Item title="Average Score">
             The average of all your exam scores. Trends compare your recent
             performance against previous attempts to show improvement or decline
-            over time.
+            over time (weekly average difference).
           </Item>
 
           <Item title="Performance Insights">

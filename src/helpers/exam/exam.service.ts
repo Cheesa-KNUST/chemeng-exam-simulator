@@ -13,28 +13,25 @@ export async function saveExamResult(
     ...data,
     createdAt: serverTimestamp(),
   });
-
   return docRef.id;
 }
 
-// Swap for a REST API:
+// TO SWITCH TO THE BACKEND: delete the mock version below and uncomment the REST version.
 
+// ── REST version (uncomment when ready) ──
 // export function useExam(id: string) {
 //   const [exam, setExam] = useState<Exam | undefined>(undefined);
 //   const [loading, setLoading] = useState(true);
-
+//
 //   useEffect(() => {
 //     if (!id) return;
-
 //     let isMounted = true;
-
+//     setLoading(true);
 //     (async () => {
-//       if (isMounted) setLoading(true);
-
 //       try {
 //         const res = await fetch(`${API_URL}/exams/${id}`);
+//         if (!res.ok) throw new Error("Failed");
 //         const data = await res.json();
-
 //         if (isMounted) setExam(data);
 //       } catch {
 //         if (isMounted) setExam(undefined);
@@ -42,16 +39,11 @@ export async function saveExamResult(
 //         if (isMounted) setLoading(false);
 //       }
 //     })();
-
-//     return () => {
-//       isMounted = false;
-//     };
+//     return () => { isMounted = false; };
 //   }, [id]);
-
+//
 //   return { exam, loading };
 // }
-
-// Using mock data for now
 
 export function useExam(id: string) {
   const [exam, setExam] = useState<Exam | undefined>(undefined);
@@ -59,21 +51,16 @@ export function useExam(id: string) {
 
   useEffect(() => {
     if (!id) return;
-
     let cancelled = false;
-
     (async () => {
       try {
         await Promise.resolve();
-
         const result = mockExams.find((e) => e.id === id);
-
         if (!cancelled) setExam(result);
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
-
     return () => {
       cancelled = true;
     };

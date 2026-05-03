@@ -6,6 +6,7 @@ import {
   Settings,
   HelpCircle,
   Sparkles,
+  History,
 } from "lucide-react";
 
 export const topNavItems = [
@@ -28,6 +29,11 @@ export const topNavItems = [
     label: "Courses",
     href: "/student/courses",
     icon: BookOpen,
+  },
+  {
+    label: "Exam History",
+    href: "/student/history",
+    icon: History,
   },
 ];
 

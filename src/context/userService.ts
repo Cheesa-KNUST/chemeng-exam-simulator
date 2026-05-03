@@ -41,6 +41,17 @@ export type Notification = {
   createdAt?: Timestamp | null;
 };
 
+export type ExamHistoryEntry = {
+  id: string;
+  userId: string;
+  examId: string;
+  course: string;
+  score: number;
+  correct: number;
+  total: number;
+  createdAt: Timestamp | null;
+};
+
 export async function upsertUserProfile(user: UserProfile) {
   await setDoc(
     doc(db, "users", user.uid),
@@ -125,4 +136,17 @@ export async function resetUserExams(userId: string) {
   );
 
   await Promise.all(deletes);
+}
+
+export async function getExamHistory(uid: string): Promise<ExamHistoryEntry[]> {
+  const q = query(
+    collection(db, "examResults"),
+    where("userId", "==", uid),
+    orderBy("createdAt", "desc"),
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map((doc) => ({
+    id: doc.id,
+    ...(doc.data() as Omit<ExamHistoryEntry, "id">),
+  }));
 }
