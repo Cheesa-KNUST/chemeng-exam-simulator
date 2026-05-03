@@ -19,7 +19,7 @@ export type FillInQuestion =
   | {
       id: string;
       kind: "fill_in";
-      answerType?: "text";
+      answerType: "text";
       question: string;
       answer: string;
       options?: never;
@@ -59,12 +59,19 @@ export type ExamQuestion =
   | FillInQuestion
   | PictorialMCQQuestion;
 
-export type Exam = {
+export type ExamDraft = {
   id: string;
   courseSlug: string;
   title: string;
   duration: number;
-  difficulty: string;
+  difficulty: "Easy" | "Medium" | "Hard";
   type: string;
   questions: ExamQuestion[];
+};
+
+export const KIND_LABELS: Record<ExamQuestion["kind"], string> = {
+  mcq: "Multiple Choice",
+  true_false: "True / False",
+  fill_in: "Fill In",
+  pictorial_mcq: "Image MCQ",
 };

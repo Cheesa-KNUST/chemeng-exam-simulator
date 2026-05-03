@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { ExamResult } from "../dashboard/dashboard.types";
-import { exams as mockExams, Exam } from "@/mock/exams";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+import { Exam } from "@/mock/exams";
 
 export async function saveExamResult(
   data: Omit<ExamResult, "id" | "createdAt">,
@@ -16,75 +14,61 @@ export async function saveExamResult(
   return docRef.id;
 }
 
-// TO SWITCH TO THE BACKEND: delete the mock version below and uncomment the REST version.
-
-// ── REST version (uncomment when ready) ──
-// export function useExam(id: string) {
-//   const [exam, setExam] = useState<Exam | undefined>(undefined);
-//   const [loading, setLoading] = useState(true);
-//
-//   useEffect(() => {
-//     if (!id) return;
-//     let isMounted = true;
-//     setLoading(true);
-//     (async () => {
-//       try {
-//         const res = await fetch(`${API_URL}/exams/${id}`);
-//         if (!res.ok) throw new Error("Failed");
-//         const data = await res.json();
-//         if (isMounted) setExam(data);
-//       } catch {
-//         if (isMounted) setExam(undefined);
-//       } finally {
-//         if (isMounted) setLoading(false);
-//       }
-//     })();
-//     return () => { isMounted = false; };
-//   }, [id]);
-//
-//   return { exam, loading };
-// }
-
 export function useExam(id: string) {
   const [exam, setExam] = useState<Exam | undefined>(undefined);
   const [loading, setLoading] = useState(() => !!id);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
-    let cancelled = false;
+
+    let isMounted = true;
+
     (async () => {
       try {
-        await Promise.resolve();
-        const result = mockExams.find((e) => e.id === id);
-        if (!cancelled) setExam(result);
+        const res = await fetch(`/api/exams/${id}`);
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch exam");
+        }
+
+        const data = await res.json();
+
+        if (isMounted) setExam(data);
+      } catch (err) {
+        if (isMounted) {
+          setError("Failed to load exam");
+          console.error(err);
+        }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (isMounted) setLoading(false);
       }
     })();
+
     return () => {
-      cancelled = true;
+      isMounted = false;
     };
   }, [id]);
 
-  return { exam, loading };
+  return { exam, loading, error };
 }
 
 export async function getExamsByCourseSlug(courseSlug: string) {
-  try {
-    const res = await fetch(`${API_URL}/exams?courseSlug=${courseSlug}`);
-    if (!res.ok) throw new Error("Failed");
-    return await res.json();
-  } catch {
-    return mockExams.filter((e) => e.courseSlug === courseSlug);
+  const res = await fetch(`/api/exams?courseSlug=${courseSlug}`);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch exams");
   }
+
+  return await res.json();
 }
 
 export async function getExamById(id: string) {
-  try {
-    const res = await fetch(`${API_URL}/exams/${id}`);
-    if (!res.ok) throw new Error("Failed");
-    return await res.json();
-  } catch {
-    return mockExams.find((e) => e.id === id);
+  const res = await fetch(`/api/exams/${id}`);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch exam");
   }
+
+  return await res.json();
 }

@@ -7,6 +7,8 @@ import {
   HelpCircle,
   Sparkles,
   History,
+  ClipboardList,
+  PlusCircle,
 } from "lucide-react";
 
 export const topNavItems = [
@@ -52,5 +54,36 @@ export const bottomNavItems = [
     label: "Help",
     href: "/student/help",
     icon: HelpCircle,
+  },
+];
+
+export const adminNavItems = [
+  {
+    label: "Dashboard",
+    href: "/admin",
+    icon: LayoutGrid,
+  },
+  {
+    label: "Manage Courses",
+    href: "/admin/courses",
+    icon: ClipboardList,
+  },
+  {
+    label: "Manage Exams",
+    href: "/admin/exams",
+    icon: ClipboardList,
+  },
+  {
+    label: "Create Exams",
+    href: "/admin/exams/new",
+    icon: PlusCircle,
+  },
+];
+
+export const bottomNav = [
+  {
+    label: "JudeAI",
+    href: "/admin/jude",
+    icon: Sparkles,
   },
 ];

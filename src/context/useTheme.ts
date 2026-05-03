@@ -24,5 +24,11 @@ export function useTheme() {
     });
   };
 
-  return { theme, toggleTheme };
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  return { theme, toggleTheme, mounted };
 }

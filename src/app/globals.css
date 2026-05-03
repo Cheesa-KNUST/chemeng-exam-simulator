@@ -17,3 +17,9 @@ html {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+@layer components {
+  .field-label {
+    @apply block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5;
+  }
+}

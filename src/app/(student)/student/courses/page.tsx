@@ -11,6 +11,7 @@ import SectionTitle from "@/components/ui/SectionTitle";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import EmptyState from "@/components/ui/EmptyState";
+import Loader from "@/components/ui/Loader";
 
 import {
   Clock,
@@ -109,7 +110,7 @@ export default function CoursesPage() {
 
       <div className="mt-2 mb-6 max-h-[28vh] overflow-y-auto no-scrollbar">
         {loadingCourses ? (
-          <p className="text-sm text-slate-400">Loading courses...</p>
+          <Loader label="Loading courses..." size="lg" />
         ) : filteredCourses.length === 0 ? (
           <EmptyState
             icon={<BookOpen size={22} />}
@@ -177,7 +178,7 @@ export default function CoursesPage() {
             description="Select a course above"
           />
         ) : loadingExams ? (
-          <p className="text-sm text-slate-400">Loading exams...</p>
+          <Loader label="Loading exams..." size="lg" />
         ) : filteredExams.length === 0 ? (
           <EmptyState
             icon={<ClipboardList size={22} />}

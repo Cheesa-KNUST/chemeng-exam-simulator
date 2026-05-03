@@ -14,7 +14,7 @@ type Props = {
 
 export default function Navbar({ onMenuClick }: Props) {
   const { user } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, mounted } = useTheme();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
@@ -26,6 +26,8 @@ export default function Navbar({ onMenuClick }: Props) {
 
     return () => unsubscribe();
   }, [user]);
+
+  const isAdmin = profile?.isAdmin === true;
 
   const initials = (() => {
     const username = profile?.username?.trim();
@@ -40,6 +42,8 @@ export default function Navbar({ onMenuClick }: Props) {
 
     return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
   })();
+
+  if (!mounted) return null;
 
   return (
     <header className="h-25 sticky top-0 z-30 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 md:px-6 flex items-center justify-between shrink-0">
@@ -64,13 +68,15 @@ export default function Navbar({ onMenuClick }: Props) {
       </div>
 
       <div className="flex items-center gap-2 md:gap-3">
-        <Link
-          href="/student/notifications"
-          className="relative p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-        >
-          <Bell size={20} strokeWidth={1.8} />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full" />
-        </Link>
+        {!isAdmin && (
+          <Link
+            href="/student/notifications"
+            className="relative p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+          >
+            <Bell size={20} strokeWidth={1.8} />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full" />
+          </Link>
+        )}
 
         <button
           onClick={toggleTheme}
@@ -87,7 +93,7 @@ export default function Navbar({ onMenuClick }: Props) {
         <div className="h-6 w-px bg-slate-300 dark:bg-slate-700" />
 
         <Link
-          href="/student/profile"
+          href={isAdmin ? "/admin/profile" : "/student/profile"}
           title={profile?.username || "Profile"}
           className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center font-bold text-white text-sm ring-2 ring-blue-200 dark:ring-blue-500 hover:ring-blue-400 transition"
         >

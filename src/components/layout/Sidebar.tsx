@@ -3,7 +3,12 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { topNavItems, bottomNavItems } from "./navItems";
+import {
+  topNavItems,
+  bottomNavItems,
+  adminNavItems,
+  bottomNav,
+} from "./navItems";
 import { X, LogOut } from "lucide-react";
 
 import { logoutUser } from "@/context/authService";
@@ -24,20 +29,51 @@ export default function Sidebar({ onClose }: SidebarProps) {
   const router = useRouter();
   const { user } = useAuth();
 
-  const [profile, setProfile] = useState<SidebarProfile>({});
+  const [profile, setProfile] = useState<
+    SidebarProfile & { isAdmin?: boolean }
+  >({});
 
   useEffect(() => {
     if (!user) return;
+
     const unsubscribe = getUserProfile(user.uid, (data: UserProfile | null) => {
       if (!data) return;
-      setProfile({ username: data.username, program: data.program });
+
+      setProfile({
+        username: data.username,
+        program: data.program,
+        isAdmin: data.isAdmin,
+      });
     });
+
     return () => unsubscribe();
   }, [user]);
 
-  const isActive = (href: string) => {
+  const isAdmin = profile.isAdmin === true;
+
+  const isStudentActive = (href: string) => {
     if (href === "/student") return pathname === "/student";
     return pathname.startsWith(href);
+  };
+
+  const isAdminActive = (href: string) => {
+    if (href === "/admin/exams") {
+      return pathname === "/admin/exams";
+    }
+
+    if (href === "/admin/exams/new") {
+      return pathname === "/admin/exams/new";
+    }
+
+    if (href === "/admin") {
+      return pathname === "/admin";
+    }
+
+    return pathname === href;
+  };
+
+  const isActive = (href: string) => {
+    return isAdmin ? isAdminActive(href) : isStudentActive(href);
   };
 
   const handleLogout = async () => {
@@ -74,6 +110,9 @@ export default function Sidebar({ onClose }: SidebarProps) {
         : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
     }`;
 
+  const navItems = profile.isAdmin ? adminNavItems : topNavItems;
+  const botNav = profile.isAdmin ? bottomNav : bottomNavItems;
+
   return (
     <aside className="w-64 min-h-screen p-5 flex flex-col bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 transition-colors">
       <div className="mb-8 flex items-center justify-between">
@@ -101,7 +140,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
           Menu
         </p>
 
-        {topNavItems.map((item) => {
+        {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.href);
 
@@ -128,7 +167,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
         </p>
 
         <div className="space-y-1">
-          {bottomNavItems.map((item) => {
+          {botNav.map((item) => {
             const Icon = item.icon;
             return (
               <Link

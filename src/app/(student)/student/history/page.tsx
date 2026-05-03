@@ -175,7 +175,11 @@ export default function ExamHistoryPage() {
           : "text-slate-400";
 
   if (!uid || loading) {
-    return <Loader fullPage size="lg" label="Loading your exam history…" />;
+    return (
+      <AppShell>
+        <Loader fullPage size="lg" label="Loading your exam history…" />;
+      </AppShell>
+    );
   }
 
   return (

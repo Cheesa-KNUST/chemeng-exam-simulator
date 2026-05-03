@@ -9,6 +9,9 @@ import {
   resetPassword,
 } from "@/context/authService";
 
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import AuthRedirect from "@/context/AuthRedirect";
@@ -30,9 +33,16 @@ export default function LoginPage() {
       setLoading(true);
       setError("");
 
-      await loginUser(email, password);
+      const cred = await loginUser(email, password);
 
-      router.replace("/student");
+      const ref = doc(db, "users", cred.user.uid);
+      const snap = await getDoc(ref);
+
+      const data = snap.data();
+
+      const isAdmin = data?.isAdmin === true;
+
+      router.replace(isAdmin ? "/admin" : "/student");
     } catch {
       setError("Invalid credentials.");
     } finally {
@@ -45,12 +55,17 @@ export default function LoginPage() {
       setLoading(true);
       setError("");
 
-      const { isNewUser } = await loginWithGoogle();
+      const { user, isNewUser } = await loginWithGoogle();
+
+      const ref = doc(db, "users", user.uid);
+      const snap = await getDoc(ref);
+
+      const isAdmin = snap.data()?.isAdmin === true;
 
       if (isNewUser) {
         router.replace("/onboarding");
       } else {
-        router.replace("/student");
+        router.replace(isAdmin ? "/admin" : "/student");
       }
     } catch {
       setError("Google signup failed.");

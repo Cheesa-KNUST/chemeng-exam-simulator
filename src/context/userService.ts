@@ -22,6 +22,7 @@ export type UserProfile = {
   level?: string;
   program?: string;
   semester?: string;
+  isAdmin?: boolean;
 };
 
 export type UserSettings = {
