@@ -3,9 +3,12 @@ import clientPromise, { dbName } from "@/lib/mongodb";
 
 type Params = { params: { slug: string } };
 
-export async function GET(_req: Request, { params }: Params) {
+export async function GET(
+  _req: Request,
+  context: { params: Promise<{ slug: string }> },
+) {
   try {
-    const { slug } = params;
+    const { slug } = await context.params;
 
     const client = await clientPromise;
     const db = client.db(dbName);
@@ -26,9 +29,12 @@ export async function GET(_req: Request, { params }: Params) {
   }
 }
 
-export async function PUT(req: Request, { params }: Params) {
+export async function PUT(
+  req: Request,
+  context: { params: Promise<{ slug: string }> },
+) {
   try {
-    const { slug } = params;
+    const { slug } = await context.params;
     const body = await req.json();
 
     delete body.slug;
@@ -66,9 +72,12 @@ export async function PUT(req: Request, { params }: Params) {
   }
 }
 
-export async function DELETE(_req: Request, { params }: Params) {
+export async function DELETE(
+  _req: Request,
+  context: { params: Promise<{ slug: string }> },
+) {
   try {
-    const { slug } = params;
+    const { slug } = await context.params;
 
     const client = await clientPromise;
     const db = client.db(dbName);
