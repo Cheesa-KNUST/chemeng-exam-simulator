@@ -66,17 +66,31 @@ export async function upsertUserProfile(user: UserProfile) {
 export function getUserProfile(
   uid: string,
   callback: (data: UserProfile | null) => void,
-) {
+): Unsubscribe {
+  if (!uid) {
+    return () => {};
+  }
+
   const ref = doc(db, "users", uid);
 
-  return onSnapshot(ref, (snap) => {
-    if (!snap.exists()) {
-      callback(null);
-      return;
-    }
+  const unsubscribe = onSnapshot(
+    ref,
+    (snap) => {
+      if (!snap.exists()) {
+        callback(null);
+        return;
+      }
 
-    callback(snap.data() as UserProfile);
-  });
+      callback(snap.data() as UserProfile);
+    },
+    (error) => {
+      // 🔥 prevents console crash after logout
+      console.warn("User profile listener error:", error);
+      callback(null);
+    },
+  );
+
+  return unsubscribe;
 }
 
 export function listenToNotifications(
