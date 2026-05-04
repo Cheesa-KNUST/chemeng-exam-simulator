@@ -1,11 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Menu, Bell, Sun, Moon } from "lucide-react";
 
 import { useAuth } from "@/context/AuthContext";
-import { getUserProfile, UserProfile } from "@/context/userService";
 import { useTheme } from "@/context/useTheme";
 
 type Props = {
@@ -13,21 +11,8 @@ type Props = {
 };
 
 export default function Navbar({ onMenuClick }: Props) {
-  const { user } = useAuth();
+  const { profile, isAdmin } = useAuth();
   const { theme, toggleTheme, mounted } = useTheme();
-
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-
-  useEffect(() => {
-    if (!user) return;
-    const unsubscribe = getUserProfile(user.uid, (data: UserProfile | null) => {
-      setProfile(data);
-    });
-
-    return () => unsubscribe();
-  }, [user]);
-
-  const isAdmin = profile?.isAdmin === true;
 
   const initials = (() => {
     const username = profile?.username?.trim();

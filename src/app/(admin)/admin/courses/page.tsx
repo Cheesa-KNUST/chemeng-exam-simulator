@@ -6,6 +6,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import EmptyState from "@/components/ui/EmptyState";
+import Loader from "@/components/ui/Loader";
 import { BookOpen, PlusCircle, Pencil, Trash2, X, Check } from "lucide-react";
 
 type Course = {
@@ -13,12 +14,25 @@ type Course = {
   title: string;
   description: string;
   exams: number;
+
+  level: number;
+  semester: number;
 };
 
 type FormState = {
   slug: string;
   title: string;
   description: string;
+  level: number;
+  semester: number;
+};
+
+type FormErrors = {
+  slug?: string;
+  title?: string;
+  description?: string;
+  level?: string;
+  semester?: string;
 };
 
 function slugify(str: string) {
@@ -29,7 +43,26 @@ function slugify(str: string) {
     .replace(/\s+/g, "-");
 }
 
-const emptyForm = (): FormState => ({ slug: "", title: "", description: "" });
+function useToast() {
+  const toast = (msg: string, success = true) => {
+    const el = document.createElement("div");
+    el.innerText = msg;
+    el.className = `fixed bottom-5 right-5 px-4 py-2 rounded-lg shadow-lg z-50 text-sm font-medium text-white ${
+      success ? "bg-emerald-600" : "bg-red-600"
+    }`;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+  };
+  return { toast };
+}
+
+const emptyForm = (): FormState => ({
+  slug: "",
+  title: "",
+  description: "",
+  level: 100,
+  semester: 1,
+});
 
 export default function AdminCoursesPage() {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -39,12 +72,14 @@ export default function AdminCoursesPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingSlug, setEditingSlug] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm());
-  const [formErrors, setFormErrors] = useState<Partial<FormState>>({});
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const [confirmDelete, setConfirmDelete] = useState<Course | null>(null);
   const [deletingSlug, setDeletingSlug] = useState<string | null>(null);
+
+  const { toast } = useToast();
 
   const fetchCourses = async () => {
     try {
@@ -98,10 +133,20 @@ export default function AdminCoursesPage() {
   };
 
   const validateForm = () => {
-    const e: Partial<FormState> = {};
+    const e: FormErrors = {};
+
     if (!form.title.trim()) e.title = "Title is required";
     if (!form.slug.trim()) e.slug = "Slug is required";
     if (!form.description.trim()) e.description = "Description is required";
+
+    if (!form.level || form.level < 100) {
+      e.level = "Level is required";
+    }
+
+    if (!form.semester || form.semester < 1) {
+      e.semester = "Semester is required";
+    }
+
     setFormErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -119,6 +164,8 @@ export default function AdminCoursesPage() {
       slug: course.slug,
       title: course.title,
       description: course.description,
+      level: course.level,
+      semester: course.semester,
     });
     setFormErrors({});
     setSaveError(null);
@@ -149,6 +196,8 @@ export default function AdminCoursesPage() {
           body: JSON.stringify({
             title: form.title,
             description: form.description,
+            level: form.level,
+            semester: form.semester,
           }),
         });
         if (!res.ok) {
@@ -158,8 +207,10 @@ export default function AdminCoursesPage() {
       }
       setModalOpen(false);
       await fetchCourses();
+      toast("Course saved successfully", true);
     } catch (e: unknown) {
       setSaveError(e instanceof Error ? e.message : "Unexpected error");
+      toast("Failed to save course", true);
     } finally {
       setSaving(false);
     }
@@ -175,8 +226,9 @@ export default function AdminCoursesPage() {
       if (!res.ok) throw new Error();
 
       setCourses((prev) => prev.filter((c) => c.slug !== course.slug));
+      toast("Course deleted successfully", true);
     } catch {
-      // optionally show toast/error state
+      toast("Failed to delete course", true);
     } finally {
       setDeletingSlug(null);
       setConfirmDelete(null);
@@ -213,7 +265,7 @@ export default function AdminCoursesPage() {
 
       <div className="mt-5">
         {loading ? (
-          <p className="text-sm text-slate-400">Loading courses...</p>
+          <Loader label="Loading courses..." size="lg" />
         ) : filtered.length === 0 ? (
           <EmptyState
             icon={<BookOpen size={22} />}
@@ -246,6 +298,15 @@ export default function AdminCoursesPage() {
                   <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
                     {course.description}
                   </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                      Level: {course.level ?? "—"}
+                    </span>
+
+                    <span className="text-xs px-2 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                      Semester: {course.semester ?? "—"}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
@@ -347,6 +408,33 @@ export default function AdminCoursesPage() {
                     {formErrors.description}
                   </p>
                 )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm">Level</label>
+                  <Input
+                    type="number"
+                    value={form.level}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, level: Number(e.target.value) }))
+                    }
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm">Semester</label>
+                  <Input
+                    type="number"
+                    value={form.semester}
+                    onChange={(e) =>
+                      setForm((p) => ({
+                        ...p,
+                        semester: Number(e.target.value),
+                      }))
+                    }
+                  />
+                </div>
               </div>
             </div>
 

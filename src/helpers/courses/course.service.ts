@@ -1,5 +1,12 @@
-export async function getCourses() {
-  const res = await fetch(`/api/courses`);
+// import { useAuth } from "@/context/AuthContext";
+
+export async function getCourses(level?: number, semester?: number) {
+  const params = new URLSearchParams();
+
+  if (level) params.append("level", String(level));
+  if (semester) params.append("semester", String(semester));
+
+  const res = await fetch(`/api/courses?${params.toString()}`);
 
   if (!res.ok) {
     throw new Error("Failed to fetch courses");

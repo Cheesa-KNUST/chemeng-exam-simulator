@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import clientPromise, { dbName } from "@/lib/mongodb";
 
-type Params = { params: { slug: string } };
-
 export async function GET(
   _req: Request,
   context: { params: Promise<{ slug: string }> },
@@ -50,11 +48,16 @@ export async function PUT(
     const client = await clientPromise;
     const db = client.db(dbName);
 
+    const updateFields = {
+      ...body,
+      updatedAt: new Date(),
+    };
+
     const result = await db
       .collection("courses")
       .findOneAndUpdate(
         { slug },
-        { $set: { ...body, updatedAt: new Date() } },
+        { $set: updateFields },
         { returnDocument: "after" },
       );
 

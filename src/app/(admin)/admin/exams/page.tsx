@@ -125,7 +125,7 @@ export default function AdminExamsPage() {
       </div>
 
       {loading ? (
-        <Loader label="Loading exams..." fullPage size="lg" />
+        <Loader label="Loading exams..." size="lg" />
       ) : filtered.length === 0 ? (
         <EmptyState
           icon={<ClipboardList size={22} />}

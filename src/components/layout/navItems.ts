@@ -7,7 +7,7 @@ import {
   HelpCircle,
   Sparkles,
   History,
-  ClipboardList,
+  FileText,
   PlusCircle,
 } from "lucide-react";
 
@@ -66,12 +66,12 @@ export const adminNavItems = [
   {
     label: "Manage Courses",
     href: "/admin/courses",
-    icon: ClipboardList,
+    icon: BookOpen,
   },
   {
     label: "Manage Exams",
     href: "/admin/exams",
-    icon: ClipboardList,
+    icon: FileText,
   },
   {
     label: "Create Exams",

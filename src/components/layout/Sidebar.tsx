@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   topNavItems,
@@ -13,43 +12,15 @@ import { X, LogOut } from "lucide-react";
 
 import { logoutUser } from "@/context/authService";
 import { useAuth } from "@/context/AuthContext";
-import { getUserProfile, UserProfile } from "@/context/userService";
 
 type SidebarProps = {
   onClose?: () => void;
 };
 
-type SidebarProfile = {
-  username?: string;
-  program?: string;
-};
-
 export default function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user } = useAuth();
-
-  const [profile, setProfile] = useState<
-    SidebarProfile & { isAdmin?: boolean }
-  >({});
-
-  useEffect(() => {
-    if (!user) return;
-
-    const unsubscribe = getUserProfile(user.uid, (data: UserProfile | null) => {
-      if (!data) return;
-
-      setProfile({
-        username: data.username,
-        program: data.program,
-        isAdmin: data.isAdmin,
-      });
-    });
-
-    return () => unsubscribe();
-  }, [user]);
-
-  const isAdmin = profile.isAdmin === true;
+  const { profile, isAdmin } = useAuth();
 
   const isStudentActive = (href: string) => {
     if (href === "/student") return pathname === "/student";
@@ -85,7 +56,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
     }
   };
 
-  const fullName = profile.username || "Student";
+  const fullName = profile?.username || "Student";
   const nameParts = fullName.trim().split(" ").filter(Boolean);
   const displayName =
     nameParts.length >= 2
@@ -101,7 +72,7 @@ export default function Sidebar({ onClose }: SidebarProps) {
       : words[0].slice(0, 7);
   };
 
-  const shortProgram = formatProgram(profile.program);
+  const shortProgram = formatProgram(profile?.program);
 
   const navLinkClass = (href: string) =>
     `w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm transition-all ${
@@ -110,8 +81,8 @@ export default function Sidebar({ onClose }: SidebarProps) {
         : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
     }`;
 
-  const navItems = profile.isAdmin ? adminNavItems : topNavItems;
-  const botNav = profile.isAdmin ? bottomNav : bottomNavItems;
+  const navItems = isAdmin ? adminNavItems : topNavItems;
+  const botNav = isAdmin ? bottomNav : bottomNavItems;
 
   return (
     <aside className="w-64 min-h-screen p-5 flex flex-col bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 transition-colors">

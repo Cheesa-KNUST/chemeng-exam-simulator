@@ -10,14 +10,14 @@ export default function AuthRedirect({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!loading && user) {
-      router.replace("/student");
+      router.replace(isAdmin ? "/admin" : "/student");
     }
-  }, [user, loading, router]);
+  }, [user, loading, isAdmin, router]);
 
   if (loading) {
     return <Loader label="Checking session..." fullPage size="lg" />;

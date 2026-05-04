@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 
 import { getCourses, getExamsByCourse } from "@/helpers/courses/course.service";
+import { useAuth } from "@/context/AuthContext";
 
 import AppShell from "@/components/layout/AppShell";
 import PageHeader from "@/components/layout/PageHeader";
@@ -27,6 +28,9 @@ type Course = {
   title: string;
   description: string;
   exams: number;
+
+  level: number;
+  semester: number;
 };
 
 type Exam = {
@@ -39,6 +43,7 @@ type Exam = {
 };
 
 export default function CoursesPage() {
+  const { profile } = useAuth();
   const [allCourses, setAllCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [exams, setExams] = useState<Exam[]>([]);
@@ -54,7 +59,10 @@ export default function CoursesPage() {
 
     (async () => {
       try {
-        const data = await getCourses();
+        const data = await getCourses(
+          profile?.level ? Number(profile.level) : undefined,
+          profile?.semester ? Number(profile.semester) : undefined,
+        );
         if (!cancelled) setAllCourses(data);
       } finally {
         if (!cancelled) setLoadingCourses(false);
@@ -64,6 +72,7 @@ export default function CoursesPage() {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
