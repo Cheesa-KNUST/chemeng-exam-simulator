@@ -50,6 +50,7 @@ export type ExamHistoryEntry = {
   score: number;
   correct: number;
   total: number;
+  resultId?: string;
   createdAt: Timestamp | null;
 };
 
@@ -84,7 +85,6 @@ export function getUserProfile(
       callback(snap.data() as UserProfile);
     },
     (error) => {
-      // 🔥 prevents console crash after logout
       console.warn("User profile listener error:", error);
       callback(null);
     },
@@ -143,14 +143,26 @@ export async function resetUserExams(userId: string) {
   if (!userId) throw new Error("Missing userId");
 
   const q = query(collection(db, "examResults"), where("userId", "==", userId));
-
   const snapshot = await getDocs(q);
-
   const deletes = snapshot.docs.map((d) =>
     deleteDoc(doc(db, "examResults", d.id)),
   );
-
   await Promise.all(deletes);
+
+  const res = await fetch(`/api/results?userId=${encodeURIComponent(userId)}`, {
+    method: "DELETE",
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    console.error("[resetUserExams] MongoDB delete failed:", res.status, body);
+    throw new Error("Failed to delete results from MongoDB");
+  }
+
+  const { deleted } = await res.json();
+  console.log(
+    `[resetUserExams] Deleted ${deleted} MongoDB result(s) for user ${userId}`,
+  );
 }
 
 export async function getExamHistory(uid: string): Promise<ExamHistoryEntry[]> {

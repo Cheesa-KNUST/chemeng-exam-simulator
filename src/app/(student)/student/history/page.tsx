@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import AppShell from "@/components/layout/AppShell";
 import PageHeader from "@/components/layout/PageHeader";
@@ -25,10 +25,10 @@ import {
   TrendingUp,
   TrendingDown,
   Minus,
+  ChevronRight,
 } from "lucide-react";
 
 import { getExamHistory, ExamHistoryEntry } from "@/context/userService";
-
 import { getScoreTrend } from "@/helpers/dashboard/dashboard.transform";
 
 function formatDate(value: unknown): string {
@@ -118,6 +118,7 @@ function StatCard({
 export default function ExamHistoryPage() {
   const { user } = useAuth();
   const uid = user?.uid;
+  const router = useRouter();
 
   const [results, setResults] = useState<ExamHistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -177,9 +178,15 @@ export default function ExamHistoryPage() {
   if (!uid || loading) {
     return (
       <AppShell>
-        <Loader fullPage size="lg" label="Loading your exam history…" />;
+        <Loader size="lg" label="Loading your exam history…" />
       </AppShell>
     );
+  }
+
+  function handleCardClick(result: ExamHistoryEntry) {
+    if (result.resultId) {
+      router.push(`/student/results/${result.resultId}`);
+    }
   }
 
   return (
@@ -251,11 +258,19 @@ export default function ExamHistoryPage() {
             <div className="space-y-3">
               {filteredResults.map((result) => {
                 const grade = gradeInfo(result.score);
+                const isNavigable = !!result.resultId;
 
                 return (
                   <button
-                    key={result.id}
-                    className="w-full text-left bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 hover:border-blue-300 dark:hover:border-slate-500 hover:shadow-sm transition-all group"
+                    key={result.resultId}
+                    onClick={() => handleCardClick(result)}
+                    disabled={!isNavigable}
+                    className={`w-full text-left bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 transition-all group
+                      ${
+                        isNavigable
+                          ? "hover:border-blue-300 dark:hover:border-slate-500 hover:shadow-sm cursor-pointer"
+                          : "cursor-default opacity-75"
+                      }`}
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 min-w-0">
@@ -301,6 +316,12 @@ export default function ExamHistoryPage() {
                         <span className={`text-2xl font-bold ${grade.color}`}>
                           {result.score}%
                         </span>
+                        {isNavigable && (
+                          <ChevronRight
+                            size={16}
+                            className="text-slate-300 dark:text-slate-600 group-hover:text-slate-500 dark:group-hover:text-slate-400 transition-colors mt-auto"
+                          />
+                        )}
                       </div>
                     </div>
                   </button>

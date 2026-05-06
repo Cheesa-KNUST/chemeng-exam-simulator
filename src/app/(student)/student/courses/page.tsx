@@ -117,7 +117,7 @@ export default function CoursesPage() {
         onChange={(e) => setCourseQuery(e.target.value)}
       />
 
-      <div className="mt-2 mb-6 max-h-[28vh] overflow-y-auto no-scrollbar">
+      <div className="mt-2 mb-6 max-h-[38vh] overflow-y-auto no-scrollbar">
         {loadingCourses ? (
           <Loader label="Loading courses..." size="lg" />
         ) : filteredCourses.length === 0 ? (
@@ -150,12 +150,12 @@ export default function CoursesPage() {
                 >
                   <h3 className="font-semibold">{course.title}</h3>
 
-                  <p className="text-sm text-slate-500 mt-2">
+                  <p className="text-sm text-slate-500 mt-2 text-justify">
                     {course.description}
                   </p>
 
                   <div className="mt-3 text-xs text-slate-400">
-                    {course.exams} exams
+                    {course.exams} exam{course.exams > 1 ? "s" : ""}
                   </div>
                 </button>
               );
@@ -211,7 +211,8 @@ export default function CoursesPage() {
 
                   <div className="flex items-center gap-2">
                     <HelpCircle size={14} />
-                    {exam.questions.length} questions
+                    {exam.questions.length} question
+                    {exam.questions.length > 1 ? "s" : ""}
                   </div>
 
                   <div className="flex items-center gap-2">

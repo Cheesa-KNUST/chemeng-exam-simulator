@@ -1,17 +1,61 @@
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import { ExamResult } from "../dashboard/dashboard.types";
-import { Exam } from "@/mock/exams";
+import { Exam, ExamQuestion } from "@/mock/exams";
+
+export type SaveExamResultPayload = Omit<ExamResult, "id" | "createdAt"> & {
+  questions: ExamQuestion[];
+  answers: Record<number, string>;
+};
 
 export async function saveExamResult(
-  data: Omit<ExamResult, "id" | "createdAt">,
-) {
+  data: SaveExamResultPayload,
+): Promise<string> {
+  const { userId, examId, course, score, total, correct, questions, answers } =
+    data;
+
+  const mongoRes = await fetch("/api/results", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      userId,
+      examId,
+      course,
+      score,
+      total,
+      correct,
+      questions,
+      answers,
+    }),
+  });
+
+  if (!mongoRes.ok) {
+    throw new Error("Failed to save result snapshot to MongoDB");
+  }
+
+  const { resultId } = await mongoRes.json();
+
   const docRef = await addDoc(collection(db, "examResults"), {
-    ...data,
+    userId,
+    examId,
+    course,
+    score,
+    total,
+    correct,
+    resultId,
     createdAt: serverTimestamp(),
   });
-  return docRef.id;
+
+  await updateDoc(doc(db, "examResults", docRef.id), { firebaseId: docRef.id });
+
+  return resultId;
 }
 
 export function useExam(id: string) {
@@ -68,6 +112,16 @@ export async function getExamById(id: string) {
 
   if (!res.ok) {
     throw new Error("Failed to fetch exam");
+  }
+
+  return await res.json();
+}
+
+export async function getResultById(resultId: string) {
+  const res = await fetch(`/api/results/${resultId}`);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch result");
   }
 
   return await res.json();

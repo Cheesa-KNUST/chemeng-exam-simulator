@@ -1,53 +1,102 @@
 "use client";
 
-import { useMemo } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import Link from "next/link";
+
+import Button from "@/components/ui/Button";
+import EmptyState from "@/components/ui/EmptyState";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import AppShell from "@/components/layout/AppShell";
 import PageHeader from "@/components/layout/PageHeader";
-import { CheckCircle2, XCircle, MinusCircle, Trophy } from "lucide-react";
-import { useExamSettings } from "@/hooks/useExamSettings";
-import { useExamStore } from "@/store/exam.store";
-import { useExam } from "@/helpers/exam/exam.service";
-import { deriveQuestions, isAnswerCorrect } from "@/helpers/exam/examShuffle";
 import Loader from "@/components/ui/Loader";
+import { CheckCircle2, XCircle, MinusCircle, Trophy } from "lucide-react";
+import { isAnswerCorrect } from "@/helpers/exam/examShuffle";
+import { useExamSettings } from "@/hooks/useExamSettings";
+import { ExamQuestion } from "@/mock/exams";
 
-export default function ResultsPage() {
-  const { id } = useParams();
-  const searchParams = useSearchParams();
+type SavedResult = {
+  _id: string;
+  examId: string;
+  course: string;
+  score: number;
+  correct: number;
+  total: number;
+  answers: Record<number, string>;
+  questions: ExamQuestion[];
+  createdAt: string;
+};
 
-  const { exam, loading: examLoading } = useExam(id as string);
-  const raw = searchParams.get("data");
-  const answers: Record<number, string> = raw
-    ? JSON.parse(decodeURIComponent(raw))
-    : {};
+export default function SavedResultPage() {
+  const { resultId } = useParams();
+  const { showAnswers } = useExamSettings();
 
-  const { showAnswers, shuffleQuestions } = useExamSettings();
-  const { questionOrder, optionOrder } = useExamStore();
+  const [result, setResult] = useState<SavedResult | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
-  const questions = useMemo(() => {
-    if (!exam) return [];
-    return deriveQuestions(exam, questionOrder, optionOrder, shuffleQuestions);
-  }, [exam, questionOrder, optionOrder, shuffleQuestions]);
+  useEffect(() => {
+    if (!resultId) return;
 
-  if (examLoading) {
+    const id = Array.isArray(resultId) ? resultId[0] : resultId;
+
+    (async () => {
+      try {
+        const res = await fetch(`/api/results/${id}`);
+        if (res.status === 404) {
+          setNotFound(true);
+          return;
+        }
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          console.error("[SavedResultPage] API error:", res.status, body);
+          throw new Error(body?.error ?? "Failed to fetch result");
+        }
+        const data = await res.json();
+        data.answers = Object.fromEntries(
+          Object.entries(data.answers as Record<string, string>).map(
+            ([k, v]) => [Number(k), v],
+          ),
+        );
+        setResult(data);
+      } catch (err) {
+        console.error("[SavedResultPage] Failed to load result:", err);
+        setNotFound(true);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [resultId]);
+
+  if (loading) {
     return <Loader fullPage size="lg" label="Loading results..." />;
   }
 
-  if (!exam) {
+  if (notFound || !result) {
     return (
       <AppShell>
-        <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mt-10 justify-center">
-          <MinusCircle size={18} />
-          <span>Results not found</span>
+        <div className="flex flex-col items-center gap-3 text-slate-500 dark:text-slate-400 mt-16 justify-center">
+          <EmptyState
+            icon={
+              <MinusCircle
+                size={32}
+                className="text-slate-300 dark:text-slate-600"
+              />
+            }
+            title="Result not found"
+            description="This result may not exist or could not be loaded."
+            action={
+              <Link href="/student/history">
+                <Button variant="primary">Go back to courses</Button>
+              </Link>
+            }
+          />
         </div>
       </AppShell>
     );
   }
 
-  const score = questions.filter((q, i) =>
-    isAnswerCorrect(q, answers[i]),
-  ).length;
-  const percent = Math.round((score / questions.length) * 100);
+  const { questions, answers, score, correct, total, course } = result;
+  const percent = score;
 
   const grade =
     percent >= 80
@@ -69,7 +118,15 @@ export default function ResultsPage() {
 
   return (
     <AppShell>
-      <PageHeader title="Exam Results" subtitle={exam.title} />
+      <PageHeader
+        title="Exam Results"
+        subtitle={course}
+        action={
+          <Link href="/student/history">
+            <Button variant="primary">Exam History</Button>
+          </Link>
+        }
+      />
 
       <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-6">
@@ -86,7 +143,7 @@ export default function ResultsPage() {
             <div className="flex items-center gap-2 mb-1">
               <Trophy size={16} className="text-amber-400" />
               <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-                {score} / {questions.length} correct
+                {correct} / {total} correct
               </p>
             </div>
 
@@ -103,7 +160,7 @@ export default function ResultsPage() {
                   Correct
                 </p>
                 <p className="font-semibold text-emerald-600 dark:text-emerald-400">
-                  {score}
+                  {correct}
                 </p>
               </div>
               <div>
@@ -138,8 +195,8 @@ export default function ResultsPage() {
       <div className="space-y-3">
         {questions.map((q, i) => {
           const userAnswer = answers[i];
-          const correct = q.answer;
-          const isCorrect = isAnswerCorrect(q, userAnswer); // ← updated
+          const correctAnswer = q.answer;
+          const isCorrect = isAnswerCorrect(q, userAnswer);
           const isSkipped = !userAnswer;
 
           return (
@@ -207,7 +264,7 @@ export default function ResultsPage() {
                       <p className="text-xs text-slate-500 dark:text-slate-400">
                         Correct answer:{" "}
                         <span className="font-medium text-emerald-600 dark:text-emerald-400">
-                          {correct}
+                          {correctAnswer}
                         </span>
                       </p>
                     )}

@@ -32,7 +32,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const unsubscribeAuth = onAuthStateChanged(auth, (u) => {
       setUser(u);
 
-      // 🔥 ALWAYS clean previous listener first
       unsubscribeProfile?.();
       unsubscribeProfile = null;
 

@@ -64,7 +64,7 @@ export default function ReviewHeader({
               ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-600 dark:text-red-400"
               : isLow
                 ? "bg-red-200 dark:bg-red-900/20 border-red-200 dark:border-red-700 text-red-600 dark:text-red-400"
-                : "bg-slate-500 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
+                : "bg-slate-200 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
           }`}
         >
           <span className={isLow ? "animate-pulse" : ""}>

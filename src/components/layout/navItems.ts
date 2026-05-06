@@ -45,11 +45,11 @@ export const bottomNavItems = [
     href: "/student/settings",
     icon: Settings,
   },
-  {
-    label: "JudeAI",
-    href: "/student/jude",
-    icon: Sparkles,
-  },
+  // {
+  //   label: "JudeAI",
+  //   href: "/student/jude",
+  //   icon: Sparkles,
+  // },
   {
     label: "Help",
     href: "/student/help",

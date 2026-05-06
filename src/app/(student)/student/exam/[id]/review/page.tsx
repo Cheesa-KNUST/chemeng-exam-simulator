@@ -63,20 +63,27 @@ export default function ReviewPage() {
       const total = questions.length;
       const percent = Math.round((correct / total) * 100);
 
+      let resultId: string | undefined;
+
       if (!isTimeUp) {
-        await saveExamResult({
+        resultId = await saveExamResult({
           userId: uid,
           examId: exam.id,
           course: exam.title,
           score: percent,
           total,
           correct,
+          questions,
+          answers,
         });
       }
 
       setCompleted(true);
+
       router.push(
-        `/student/results/${exam.id}?data=${encodeURIComponent(JSON.stringify(answers))}`,
+        resultId
+          ? `/student/results/${resultId}`
+          : `/student/results/${exam.id}`,
       );
     } finally {
       setIsSubmitting(false);

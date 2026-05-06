@@ -119,19 +119,21 @@ export default function ExamPage() {
       const total = questions.length;
       const percent = Math.round((correct / total) * 100);
 
-      await saveExamResult({
+      const resultId = await saveExamResult({
         userId: uid,
         examId: exam.id,
         course: exam.title,
         score: percent,
         total,
         correct,
+        questions,
+        answers,
       });
 
       setCompleted(true);
 
-      const data = encodeURIComponent(JSON.stringify(answers));
-      router.push(`/student/results/${exam.id}?data=${data}`);
+      // Navigate to the persistent result page using the MongoDB resultId
+      router.push(`/student/results/${resultId}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -146,13 +148,15 @@ export default function ExamPage() {
     const total = questions.length;
     const percent = Math.round((correct / total) * 100);
 
-    await saveExamResult({
+    const resultId = await saveExamResult({
       userId: uid,
       examId: exam.id,
       course: exam.title,
       score: percent,
       total,
       correct,
+      questions,
+      answers,
     });
 
     setTimeUp(true);
@@ -161,9 +165,7 @@ export default function ExamPage() {
     if (allowReview) {
       router.push(`/student/exam/${exam.id}/review`);
     } else {
-      router.push(
-        `/student/results/${exam.id}?data=${encodeURIComponent(JSON.stringify(answers))}`,
-      );
+      router.push(`/student/results/${resultId}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [exam, answers, uid, router, setTimeUp, setCompleted]);
@@ -312,7 +314,7 @@ export default function ExamPage() {
             onClick={() => setCurrent(Math.max(0, safeIndex - 1))}
             disabled={safeIndex === 0}
           >
-            ← Previous
+            Previous
           </Button>
 
           <div className="hidden sm:flex items-center gap-1.5">
@@ -350,7 +352,7 @@ export default function ExamPage() {
             </Button>
           ) : (
             <Button variant="primary" onClick={() => setCurrent(safeIndex + 1)}>
-              Next →
+              Next
             </Button>
           )}
         </div>

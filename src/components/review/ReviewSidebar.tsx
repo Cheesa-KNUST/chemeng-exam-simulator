@@ -178,11 +178,11 @@ export default function ReviewSidebar({
         </div>
       </div>
 
-      <div className="px-5 pb-5 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-5">
+      <div className="px-5 pb-5 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
         <button
           onClick={onSubmit}
           disabled={isSubmitting}
-          className="w-full flex items-center justify-center gap-1 px-4 py-3 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold hover:bg-slate-700 dark:hover:bg-slate-100 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-1 px-4 py-3 rounded-xl bg-slate-800 dark:bg-slate-800 text-white dark:text-slate-20 text-sm font-bold hover:bg-slate-700 dark:hover:bg-slate-900 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {isSubmitting ? (
             <>
@@ -199,7 +199,7 @@ export default function ReviewSidebar({
         {!isTimeUp ? (
           <button
             onClick={onReturn}
-            className="w-full flex items-center justify-center gap-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-slate-700 dark:text-slate-300 text-sm font-semibold hover:bg-slate-50 hover:text-slate-400 dark:hover:bg-slate-800 active:scale-[0.98] transition-all"
+            className="w-full flex items-center justify-center gap-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-600 text-slate-100 dark:text-slate-50 text-sm font-semibold hover:bg-slate-50 hover:text-slate-900 active:scale-[0.98] transition-all"
           >
             <ArrowLeft size={14} />
             Return to Exam

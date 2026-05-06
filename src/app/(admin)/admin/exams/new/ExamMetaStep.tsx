@@ -9,6 +9,7 @@ import { ExamDraft } from "./types";
 type Course = { slug: string; title: string };
 
 const DIFFICULTIES = ["Easy", "Medium", "Hard"] as const;
+const TYPES = ["Midsem", "End of Sem", "Topic", "Quiz"] as const;
 
 type Props = {
   draft: ExamDraft;
@@ -62,6 +63,7 @@ export default function ExamMetaStep({ draft, onChange, onNext }: Props) {
     if (!draft.duration || draft.duration < 1)
       e.duration = "Duration must be at least 1 minute";
     setErrors(e);
+    if (!draft.type) e.type = "Please select an exam type";
     return Object.keys(e).length === 0;
   };
 
@@ -169,6 +171,32 @@ export default function ExamMetaStep({ draft, onChange, onNext }: Props) {
             </button>
           ))}
         </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+          Exam Type <span className="text-red-400">*</span>
+        </label>
+
+        <div className="flex flex-wrap gap-2">
+          {TYPES.map((t) => (
+            <button
+              key={t}
+              onClick={() => onChange({ type: t })}
+              className={`px-4 py-2 rounded-xl text-sm font-medium border transition ${
+                draft.type === t
+                  ? "bg-blue-50 border-blue-400 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400"
+                  : "border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300"
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {errors.type && (
+          <p className="text-xs text-red-400 mt-1">{errors.type}</p>
+        )}
       </div>
 
       <div className="pt-2">
