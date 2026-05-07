@@ -10,8 +10,8 @@ import { ArrowRight } from "lucide-react";
 
 import { useDashboardData } from "@/app/(student)/features/useDashboardData";
 
-import StatsSection from "@/app/(student)/features/StatsSection";
-import RecentExamsSection from "@/app/(student)/features/RecentExamsSection";
+import StatsSection from "../features/StatsSection";
+import RecentExamsSection from "../features/RecentExamsSection";
 
 import PerformanceChart from "@/components/charts/PerformanceChart";
 import ScoreDistributionChart from "@/components/charts/ScoreDistributionChart";

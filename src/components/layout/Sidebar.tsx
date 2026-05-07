@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   topNavItems,
   bottomNavItems,
@@ -19,8 +19,7 @@ type SidebarProps = {
 
 export default function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname();
-  const router = useRouter();
-  const { profile, isAdmin } = useAuth();
+  const { profile, isAdmin, setLoggingOut } = useAuth();
 
   const isStudentActive = (href: string) => {
     if (href === "/student") return pathname === "/student";
@@ -28,31 +27,22 @@ export default function Sidebar({ onClose }: SidebarProps) {
   };
 
   const isAdminActive = (href: string) => {
-    if (href === "/admin/exams") {
-      return pathname === "/admin/exams";
-    }
-
-    if (href === "/admin/exams/new") {
-      return pathname === "/admin/exams/new";
-    }
-
-    if (href === "/admin") {
-      return pathname === "/admin";
-    }
-
+    if (href === "/admin/exams") return pathname === "/admin/exams";
+    if (href === "/admin/exams/new") return pathname === "/admin/exams/new";
+    if (href === "/admin") return pathname === "/admin";
     return pathname === href;
   };
 
-  const isActive = (href: string) => {
-    return isAdmin ? isAdminActive(href) : isStudentActive(href);
-  };
+  const isActive = (href: string) =>
+    isAdmin ? isAdminActive(href) : isStudentActive(href);
 
   const handleLogout = async () => {
     try {
+      setLoggingOut(true);
       await logoutUser();
-      router.replace("/");
     } catch (err) {
       console.error("Logout failed:", err);
+      setLoggingOut(false);
     }
   };
 

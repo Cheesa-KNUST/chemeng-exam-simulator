@@ -31,6 +31,54 @@ type Profile = {
   semester: string;
 };
 
+const LEVELS = ["100", "200", "300", "400"] as const;
+const SEMESTERS = ["1", "2"] as const;
+
+type Level = (typeof LEVELS)[number];
+type Semester = (typeof SEMESTERS)[number];
+
+function isLevel(value: string): value is Level {
+  return LEVELS.includes(value as Level);
+}
+
+function isSemester(value: string): value is Semester {
+  return SEMESTERS.includes(value as Semester);
+}
+
+function SegmentedControl<T extends string>({
+  options,
+  value,
+  onChange,
+  formatLabel,
+}: {
+  options: readonly T[];
+  value: T | "";
+  onChange: (val: T) => void;
+  formatLabel?: (val: T) => string;
+}) {
+  return (
+    <div className="flex gap-2 flex-wrap">
+      {options.map((opt) => {
+        const active = value === opt;
+        return (
+          <button
+            key={opt}
+            type="button"
+            onClick={() => onChange(opt)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+              active
+                ? "bg-blue-500 border-blue-500 text-white"
+                : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-blue-400 hover:text-blue-500 dark:hover:text-blue-400"
+            }`}
+          >
+            {formatLabel ? formatLabel(opt) : opt}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function ProfileSettingsPage() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -46,9 +94,9 @@ export default function ProfileSettingsPage() {
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
-  const [level, setLevel] = useState("");
+  const [level, setLevel] = useState<(typeof LEVELS)[number] | "">("");
   const [program, setProgram] = useState("");
-  const [semester, setSemester] = useState("");
+  const [semester, setSemester] = useState<(typeof SEMESTERS)[number] | "">("");
 
   useEffect(() => {
     if (!user) return;
@@ -64,9 +112,11 @@ export default function ProfileSettingsPage() {
       setOriginal(profile);
       setUsername(profile.username);
       setEmail(profile.email);
-      setLevel(profile.level);
+      setLevel(data.level && isLevel(data.level) ? data.level : "");
       setProgram(profile.program);
-      setSemester(profile.semester);
+      setSemester(
+        data.semester && isSemester(data.semester) ? data.semester : "",
+      );
     });
     return () => unsub();
   }, [user]);
@@ -83,9 +133,9 @@ export default function ProfileSettingsPage() {
 
   const handleCancel = () => {
     setUsername(original.username);
-    setLevel(original.level);
+    setLevel(isLevel(original.level) ? original.level : "");
+    setSemester(isSemester(original.semester) ? original.semester : "");
     setProgram(original.program);
-    setSemester(original.semester);
   };
 
   const handleSave = async () => {
@@ -132,7 +182,6 @@ export default function ProfileSettingsPage() {
                 className="object-cover w-full h-full"
               />
             </div>
-
             <div className="pt-1 text-center sm:text-left">
               <h3 className="text-slate-800 dark:text-slate-100 font-semibold text-base">
                 Profile Picture
@@ -183,7 +232,7 @@ export default function ProfileSettingsPage() {
                 <Input
                   value={program}
                   onChange={(e) => setProgram(e.target.value)}
-                  placeholder="Chemical Engineering"
+                  placeholder="e.g. Chemical Engineering"
                 />
               </div>
 
@@ -191,22 +240,34 @@ export default function ProfileSettingsPage() {
                 <label className="text-sm font-medium text-slate-600 dark:text-slate-300">
                   Current Level
                 </label>
-                <Input
+                <SegmentedControl
+                  options={LEVELS}
                   value={level}
-                  onChange={(e) => setLevel(e.target.value)}
-                  placeholder="300"
+                  onChange={setLevel}
+                  formatLabel={(v) => `Level ${v}`}
                 />
+                {!level && (
+                  <p className="text-xs text-slate-400 dark:text-slate-500">
+                    Select your current level
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-600 dark:text-slate-300">
                   Semester
                 </label>
-                <Input
+                <SegmentedControl
+                  options={SEMESTERS}
                   value={semester}
-                  onChange={(e) => setSemester(e.target.value)}
-                  placeholder="1"
+                  onChange={setSemester}
+                  formatLabel={(v) => `Semester ${v}`}
                 />
+                {!semester && (
+                  <p className="text-xs text-slate-400 dark:text-slate-500">
+                    Select your current semester
+                  </p>
+                )}
               </div>
             </div>
 

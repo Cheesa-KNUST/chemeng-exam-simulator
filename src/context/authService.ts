@@ -8,6 +8,9 @@ import {
   deleteUser,
   reauthenticateWithCredential,
   EmailAuthProvider,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
 } from "firebase/auth";
 
 import { auth, db } from "@/lib/firebase";
@@ -35,12 +38,27 @@ export async function signupUser(
   return cred;
 }
 
-export async function loginUser(email: string, password: string) {
+export async function loginUser(
+  email: string,
+  password: string,
+  rememberMe: boolean,
+) {
+  await setPersistence(
+    auth,
+    rememberMe ? browserLocalPersistence : browserSessionPersistence,
+  );
+
   return await signInWithEmailAndPassword(auth, email, password);
 }
 
-export async function loginWithGoogle() {
+export async function loginWithGoogle(rememberMe: boolean) {
+  await setPersistence(
+    auth,
+    rememberMe ? browserLocalPersistence : browserSessionPersistence,
+  );
+
   const provider = new GoogleAuthProvider();
+
   const result = await signInWithPopup(auth, provider);
 
   const ref = doc(db, "users", result.user.uid);

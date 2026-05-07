@@ -169,7 +169,6 @@ export default function SettingsPage() {
       router.replace("/");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      console.error(err);
       const message =
         err?.code === "auth/requires-recent-login" ||
         err?.message?.includes("recent login")
@@ -275,12 +274,12 @@ export default function SettingsPage() {
               onChange={(v) => updateGeneral({ notifications: v })}
             />
 
-            <Toggle
+            {/* <Toggle
               label="Save AI Chats"
               description="Store your JudeAI conversations so you can revisit them later"
               enabled={settings.saveChats}
               onChange={(v) => updateGeneral({ saveChats: v })}
-            />
+            /> */}
           </div>
 
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6">

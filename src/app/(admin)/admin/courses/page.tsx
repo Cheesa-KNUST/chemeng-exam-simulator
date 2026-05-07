@@ -22,6 +22,9 @@ export default function AdminCoursesPage() {
 
   const [query, setQuery] = useState("");
 
+  const [levelFilter, setLevelFilter] = useState("all");
+  const [semesterFilter, setSemesterFilter] = useState("all");
+
   const [modalCourse, setModalCourse] = useState<Course | null | undefined>(
     null,
   );
@@ -65,11 +68,19 @@ export default function AdminCoursesPage() {
     }
   };
 
-  const filtered = courses.filter(
-    (c) =>
+  const filtered = courses.filter((c) => {
+    const matchesQuery =
       c.title.toLowerCase().includes(query.toLowerCase()) ||
-      c.slug.toLowerCase().includes(query.toLowerCase()),
-  );
+      c.slug.toLowerCase().includes(query.toLowerCase());
+
+    const matchesLevel =
+      levelFilter === "all" || c.level.toString() === levelFilter;
+
+    const matchesSemester =
+      semesterFilter === "all" || c.semester.toString() === semesterFilter;
+
+    return matchesQuery && matchesLevel && matchesSemester;
+  });
 
   return (
     <AppShell>
@@ -87,11 +98,37 @@ export default function AdminCoursesPage() {
         }
       />
 
-      <Input
-        placeholder="Search courses..."
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-      />
+      <div className="flex flex-col md:flex-row gap-3 mt-4">
+        <div className="flex-1">
+          <Input
+            placeholder="Search courses..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+
+        <select
+          value={levelFilter}
+          onChange={(e) => setLevelFilter(e.target.value)}
+          className="h-12 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 text-sm"
+        >
+          <option value="all">All Levels</option>
+          <option value="100">Level 100</option>
+          <option value="200">Level 200</option>
+          <option value="300">Level 300</option>
+          <option value="400">Level 400</option>
+        </select>
+
+        <select
+          value={semesterFilter}
+          onChange={(e) => setSemesterFilter(e.target.value)}
+          className="h-12 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-4 text-sm"
+        >
+          <option value="all">All Semesters</option>
+          <option value="1">Semester 1</option>
+          <option value="2">Semester 2</option>
+        </select>
+      </div>
 
       <div className="mt-5">
         {loading ? (

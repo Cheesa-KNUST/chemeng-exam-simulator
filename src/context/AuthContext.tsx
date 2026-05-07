@@ -11,6 +11,8 @@ type AuthContextType = {
   profile: UserProfile | null;
   isAdmin: boolean;
   loading: boolean;
+  loggingOut: boolean;
+  setLoggingOut: (v: boolean) => void;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -19,31 +21,33 @@ const AuthContext = createContext<AuthContextType>({
   profile: null,
   isAdmin: false,
   loading: true,
+  loggingOut: false,
+  setLoggingOut: () => {},
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [authState, setAuthState] = useState<{
+    user: User | null;
+    profile: UserProfile | null;
+    loading: boolean;
+  }>({ user: null, profile: null, loading: true });
+
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
     let unsubscribeProfile: (() => void) | null = null;
 
     const unsubscribeAuth = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-
       unsubscribeProfile?.();
       unsubscribeProfile = null;
 
       if (!u) {
-        setProfile(null);
-        setLoading(false);
+        setAuthState({ user: null, profile: null, loading: false });
+        setLoggingOut(false);
         return;
       }
-
       unsubscribeProfile = getUserProfile(u.uid, (data) => {
-        setProfile(data);
-        setLoading(false);
+        setAuthState({ user: u, profile: data, loading: false });
       });
     });
 
@@ -56,11 +60,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <AuthContext.Provider
       value={{
-        user,
-        uid: user?.uid ?? null,
-        profile,
-        isAdmin: profile?.isAdmin === true,
-        loading,
+        user: authState.user,
+        uid: authState.user?.uid ?? null,
+        profile: authState.profile,
+        isAdmin: authState.profile?.isAdmin === true,
+        loading: authState.loading,
+        loggingOut,
+        setLoggingOut,
       }}
     >
       {children}

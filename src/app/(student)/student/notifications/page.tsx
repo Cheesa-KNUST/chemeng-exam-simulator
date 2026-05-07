@@ -140,10 +140,10 @@ export default function NotificationsPage() {
                       {icon}
                       <div>
                         <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-                          {n.title}
+                          Title: {n.title}
                         </p>
                         <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                          {n.message}
+                          Message: {n.message}
                         </p>
                       </div>
                     </div>

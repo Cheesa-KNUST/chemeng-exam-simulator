@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import { db } from "@/lib/firebase";
-import { doc, getDoc } from "firebase/firestore";
 import Loader from "@/components/ui/Loader";
 
 export default function RequireAuth({
@@ -12,41 +10,31 @@ export default function RequireAuth({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading } = useAuth();
+  const { user, profile, loading, loggingOut } = useAuth();
   const router = useRouter();
 
-  const [checkingProfile, setCheckingProfile] = useState(true);
-
   useEffect(() => {
-    const checkUserProfile = async () => {
-      if (loading) return;
+    if (loading) return;
 
-      if (!user) {
-        router.replace("/");
-        return;
-      }
+    if (!user) {
+      router.replace("/");
+      return;
+    }
 
-      try {
-        const ref = doc(db, "users", user.uid);
-        const snap = await getDoc(ref);
+    if (profile === null) {
+      router.replace("/onboarding");
+    }
+  }, [user, profile, loading, router]);
 
-        if (!snap.exists()) {
-          router.replace("/onboarding");
-        } else {
-          setCheckingProfile(false);
-        }
-      } catch (err) {
-        console.error(err);
-        router.replace("/");
-      }
-    };
+  if (loggingOut) {
+    return <Loader label="Logging out..." fullPage size="lg" />;
+  }
 
-    checkUserProfile();
-  }, [user, loading, router]);
-
-  if (loading || checkingProfile) {
+  if (loading || (user && profile === null)) {
     return <Loader label="Loading session..." fullPage />;
   }
+
+  if (!user) return null;
 
   return <>{children}</>;
 }

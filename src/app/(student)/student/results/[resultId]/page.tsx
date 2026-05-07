@@ -9,10 +9,17 @@ import { useParams } from "next/navigation";
 import AppShell from "@/components/layout/AppShell";
 import PageHeader from "@/components/layout/PageHeader";
 import Loader from "@/components/ui/Loader";
-import { CheckCircle2, XCircle, MinusCircle, Trophy } from "lucide-react";
+import {
+  CheckCircle2,
+  XCircle,
+  MinusCircle,
+  Trophy,
+  Sparkles,
+} from "lucide-react";
 import { isAnswerCorrect } from "@/helpers/exam/examShuffle";
 import { useExamSettings } from "@/hooks/useExamSettings";
 import { ExamQuestion } from "@/mock/exams";
+import ExplanationModal from "@/components/ui/ExplanationModal";
 
 type SavedResult = {
   _id: string;
@@ -26,6 +33,12 @@ type SavedResult = {
   createdAt: string;
 };
 
+type ExplanationTarget = {
+  question: ExamQuestion;
+  index: number;
+  correctAnswer: string;
+};
+
 export default function SavedResultPage() {
   const { resultId } = useParams();
   const { showAnswers } = useExamSettings();
@@ -33,6 +46,8 @@ export default function SavedResultPage() {
   const [result, setResult] = useState<SavedResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [explanationTarget, setExplanationTarget] =
+    useState<ExplanationTarget | null>(null);
 
   useEffect(() => {
     if (!resultId) return;
@@ -195,7 +210,7 @@ export default function SavedResultPage() {
       <div className="space-y-3">
         {questions.map((q, i) => {
           const userAnswer = answers[i];
-          const correctAnswer = q.answer;
+          const correctAnswer = String(q.answer);
           const isCorrect = isAnswerCorrect(q, userAnswer);
           const isSkipped = !userAnswer;
 
@@ -269,12 +284,36 @@ export default function SavedResultPage() {
                       </p>
                     )}
                   </div>
+
+                  <button
+                    onClick={() =>
+                      setExplanationTarget({
+                        question: q,
+                        index: i,
+                        correctAnswer,
+                      })
+                    }
+                    className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                  >
+                    <Sparkles size={12} />
+                    More Explanation
+                  </button>
                 </div>
               </div>
             </div>
           );
         })}
       </div>
+
+      {explanationTarget && (
+        <ExplanationModal
+          open
+          onClose={() => setExplanationTarget(null)}
+          question={explanationTarget.question}
+          questionIndex={explanationTarget.index}
+          correctAnswer={explanationTarget.correctAnswer}
+        />
+      )}
     </AppShell>
   );
 }

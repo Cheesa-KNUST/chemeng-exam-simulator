@@ -1,6 +1,7 @@
 "use client";
 
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import ChartWrapper from "./ChartWrapper";
 
 type Props = {
   data: { name: string; value: number }[];
@@ -23,25 +24,27 @@ export default function ScoreDistributionChart({ data }: Props) {
       </h3>
 
       <div className="flex flex-col md:flex-row gap-6">
-        <div className="h-72 w-full md:w-2/3" style={{ minWidth: 0 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={data}
-                dataKey="value"
-                outerRadius={85}
-                innerRadius={45}
-                paddingAngle={3}
-              >
-                {data.map((_, i) => (
-                  <Cell key={`cell-${i}`} fill={COLORS[i % COLORS.length]} />
-                ))}
-              </Pie>
+        <ChartWrapper>
+          <div className="h-72 w-full md:w-2/3">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={data}
+                  dataKey="value"
+                  outerRadius={85}
+                  innerRadius={45}
+                  paddingAngle={3}
+                >
+                  {data.map((_, i) => (
+                    <Cell key={`cell-${i}`} fill={COLORS[i % COLORS.length]} />
+                  ))}
+                </Pie>
 
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </ChartWrapper>
 
         <div className="w-full md:w-1/3 flex flex-col justify-center gap-3">
           {data.map((item, i) => (

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+
 import {
   loginUser,
   loginWithGoogle,
@@ -13,11 +14,16 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import AuthRedirect from "@/context/AuthRedirect";
 
+import { Eye, EyeOff, Check } from "lucide-react";
+
 export default function LoginPage() {
   const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const [rememberMe, setRememberMe] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -30,7 +36,7 @@ export default function LoginPage() {
       setLoading(true);
       setError("");
 
-      await loginUser(email, password);
+      await loginUser(email, password, rememberMe);
 
       router.replace("/");
     } catch {
@@ -45,7 +51,7 @@ export default function LoginPage() {
       setLoading(true);
       setError("");
 
-      const { isNewUser } = await loginWithGoogle();
+      const { isNewUser } = await loginWithGoogle(rememberMe);
 
       if (isNewUser) {
         router.replace("/onboarding");
@@ -99,12 +105,50 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
             />
 
-            <Input
-              placeholder="Password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <div className="relative">
+              <Input
+                placeholder="Password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="pr-12"
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setRememberMe((prev) => !prev)}
+                className="flex items-center gap-2 text-sm text-slate-300"
+              >
+                <div
+                  className={`h-5 w-5 rounded border flex items-center justify-center transition ${
+                    rememberMe
+                      ? "bg-blue-600 border-blue-600"
+                      : "border-slate-600"
+                  }`}
+                >
+                  {rememberMe && <Check size={14} className="text-white" />}
+                </div>
+                Remember me
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowResetModal(true)}
+                className="text-sm text-blue-400 hover:underline"
+              >
+                Forgot Password?
+              </button>
+            </div>
 
             {error && <p className="text-red-400 text-sm">{error}</p>}
 
@@ -117,21 +161,13 @@ export default function LoginPage() {
               {loading ? "Signing in..." : "Login"}
             </Button>
 
-            <p className="text-sm text-slate-400 text-center">
-              Forget Password?{" "}
-              <span
-                onClick={() => setShowResetModal(true)}
-                className="text-blue-400 hover:underline cursor-pointer"
-              >
-                Reset
-              </span>
-            </p>
-
             <div className="flex items-center gap-3">
               <div className="h-px bg-slate-700 flex-1" />
+
               <span className="text-xs text-slate-500 uppercase tracking-wider">
                 or
               </span>
+
               <div className="h-px bg-slate-700 flex-1" />
             </div>
 
@@ -161,7 +197,7 @@ export default function LoginPage() {
               </h2>
 
               <p className="text-sm text-slate-400">
-                We`ll send a password reset link to:
+                We&apos;ll send a password reset link to:
               </p>
 
               <Input
@@ -171,6 +207,7 @@ export default function LoginPage() {
               />
 
               {error && <p className="text-red-400 text-sm">{error}</p>}
+
               {message && <p className="text-green-400 text-sm">{message}</p>}
 
               <div className="flex gap-3">

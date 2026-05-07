@@ -1,6 +1,5 @@
 import {
   LayoutGrid,
-  Bell,
   User,
   BookOpen,
   Settings,
@@ -9,6 +8,7 @@ import {
   History,
   FileText,
   PlusCircle,
+  Mail,
 } from "lucide-react";
 
 export const topNavItems = [
@@ -21,11 +21,6 @@ export const topNavItems = [
     label: "Profile",
     href: "/student/profile",
     icon: User,
-  },
-  {
-    label: "Notifications",
-    href: "/student/notifications",
-    icon: Bell,
   },
   {
     label: "Courses",
@@ -81,6 +76,11 @@ export const adminNavItems = [
 ];
 
 export const bottomNav = [
+  {
+    label: "Send Notifications",
+    href: "/admin/notification",
+    icon: Mail,
+  },
   {
     label: "JudeAI",
     href: "/admin/jude",

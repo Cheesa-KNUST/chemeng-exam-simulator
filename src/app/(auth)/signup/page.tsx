@@ -9,6 +9,11 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import AuthRedirect from "@/context/AuthRedirect";
 
+const PROGRAMS = ["Chemical Engineering"];
+
+const LEVELS = ["100", "200", "300", "400"];
+const SEMESTERS = ["1", "2"];
+
 export default function SignupPage() {
   const router = useRouter();
 
@@ -36,6 +41,11 @@ export default function SignupPage() {
   };
 
   const handleCompleteSignup = async () => {
+    if (!username || !program || !semester || !level) {
+      setError("Please complete all fields.");
+      return;
+    }
+
     try {
       setLoading(true);
       setError("");
@@ -53,11 +63,6 @@ export default function SignupPage() {
       setError("Signup failed.");
     } finally {
       setLoading(false);
-    }
-
-    if (!username || !program || !semester || !level) {
-      setError("Please complete all fields.");
-      return;
     }
   };
 
@@ -143,7 +148,7 @@ export default function SignupPage() {
 
         {showModal && (
           <div className="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-slate-900 p-6 rounded-xl w-full max-w-md space-y-4 border border-slate-800">
+            <div className="bg-slate-900 p-6 rounded-xl w-full max-w-md space-y-5 border border-slate-800 max-h-[90vh] overflow-y-auto">
               <h2 className="text-xl font-semibold text-white">
                 Complete your profile
               </h2>
@@ -154,23 +159,81 @@ export default function SignupPage() {
                 onChange={(e) => setUsername(e.target.value)}
               />
 
-              <Input
-                placeholder="Program"
-                value={program}
-                onChange={(e) => setProgram(e.target.value)}
-              />
+              <div className="space-y-1.5">
+                <label className="text-sm text-slate-400 font-medium">
+                  Program
+                </label>
+                <select
+                  value={program}
+                  onChange={(e) => setProgram(e.target.value)}
+                  className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="" disabled>
+                    Select your program
+                  </option>
+                  {PROGRAMS.map((p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-              <Input
-                placeholder="Semester"
-                value={semester}
-                onChange={(e) => setSemester(e.target.value)}
-              />
+              <div className="space-y-2">
+                <label className="text-sm text-slate-400 font-medium">
+                  Level
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {LEVELS.map((l) => (
+                    <label
+                      key={l}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer text-sm transition-colors ${
+                        level === l
+                          ? "bg-blue-600 border-blue-500 text-white"
+                          : "bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="level"
+                        value={l}
+                        checked={level === l}
+                        onChange={() => setLevel(l)}
+                        className="sr-only"
+                      />
+                      {l}
+                    </label>
+                  ))}
+                </div>
+              </div>
 
-              <Input
-                placeholder="Level"
-                value={level}
-                onChange={(e) => setLevel(e.target.value)}
-              />
+              <div className="space-y-2">
+                <label className="text-sm text-slate-400 font-medium">
+                  Semester
+                </label>
+                <div className="flex gap-2">
+                  {SEMESTERS.map((s) => (
+                    <label
+                      key={s}
+                      className={`flex items-center gap-2 px-6 py-2 rounded-lg border cursor-pointer text-sm transition-colors ${
+                        semester === s
+                          ? "bg-blue-600 border-blue-500 text-white"
+                          : "bg-slate-800 border-slate-700 text-slate-300 hover:border-slate-500"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="semester"
+                        value={s}
+                        checked={semester === s}
+                        onChange={() => setSemester(s)}
+                        className="sr-only"
+                      />
+                      Semester {s}
+                    </label>
+                  ))}
+                </div>
+              </div>
 
               {error && <p className="text-red-400 text-sm">{error}</p>}
 
@@ -187,7 +250,9 @@ export default function SignupPage() {
                   variant="primary"
                   onClick={handleCompleteSignup}
                   className="w-full"
-                  disabled={loading}
+                  disabled={
+                    loading || !username || !program || !semester || !level
+                  }
                 >
                   {loading ? "Creating..." : "Finish"}
                 </Button>
