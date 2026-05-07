@@ -70,6 +70,14 @@ export async function loginWithGoogle(rememberMe: boolean) {
   };
 }
 
+export async function signupWithGoogle() {
+  const provider = new GoogleAuthProvider();
+  const result = await signInWithPopup(auth, provider);
+  const ref = doc(db, "users", result.user.uid);
+  const snap = await getDoc(ref);
+  return { user: result.user, isNewUser: !snap.exists() };
+}
+
 export async function logoutUser() {
   return await signOut(auth);
 }

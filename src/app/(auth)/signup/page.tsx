@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signupUser, loginWithGoogle } from "@/context/authService";
+import { signupUser, signupWithGoogle } from "@/context/authService";
 
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
@@ -71,7 +71,7 @@ export default function SignupPage() {
       setLoading(true);
       setError("");
 
-      const { isNewUser } = await loginWithGoogle();
+      const { isNewUser } = await signupWithGoogle();
 
       if (isNewUser) {
         router.replace("/onboarding");
