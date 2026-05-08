@@ -40,6 +40,10 @@ export type Notification = {
   type: "success" | "info" | "warning";
   read: boolean;
   createdAt?: Timestamp | null;
+  targetAudience: "all" | "specific";
+  targetLevel?: string;
+  targetSemester?: string;
+  targetProgram?: string;
 };
 
 export type ExamHistoryEntry = {
@@ -95,6 +99,7 @@ export function getUserProfile(
 
 export function listenToNotifications(
   callback: (notifications: Notification[]) => void,
+  profile?: UserProfile | null,
 ): Unsubscribe {
   const q = query(
     collection(db, "notifications"),
@@ -102,12 +107,25 @@ export function listenToNotifications(
   );
 
   return onSnapshot(q, (snapshot) => {
-    const data: Notification[] = snapshot.docs.map((doc) => ({
+    const all: Notification[] = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...(doc.data() as Omit<Notification, "id">),
     }));
 
-    callback(data);
+    const filtered = all.filter((n) => {
+      if (!n.targetAudience || n.targetAudience === "all") return true;
+      if (!profile) return false;
+
+      const levelMatch = !n.targetLevel || profile.level === n.targetLevel;
+      const semesterMatch =
+        !n.targetSemester || profile.semester === n.targetSemester;
+      const programMatch =
+        !n.targetProgram || profile.program === n.targetProgram;
+
+      return levelMatch && semesterMatch && programMatch;
+    });
+
+    callback(filtered);
   });
 }
 

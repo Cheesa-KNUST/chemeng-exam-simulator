@@ -20,6 +20,10 @@ export type Notification = {
   type: "success" | "info" | "warning";
   read: boolean;
   createdAt?: Timestamp | null;
+  targetAudience?: "all" | "specific";
+  targetLevel?: string;
+  targetSemester?: string;
+  targetProgram?: string;
 };
 
 export type ScheduledNotification = {
@@ -28,10 +32,13 @@ export type ScheduledNotification = {
   message: string;
   type: "success" | "info" | "warning";
   scheduledAt: Timestamp;
-  sent: boolean;
   createdBy: string;
-  targetAudience: "all" | "level" | "program";
-  targetValue?: string;
+  sent: boolean;
+  sentAt?: Timestamp | null;
+  targetAudience?: "all" | "specific";
+  targetLevel?: string;
+  targetSemester?: string;
+  targetProgram?: string;
 };
 
 export async function createNotification(
@@ -67,25 +74,8 @@ export async function deleteNotification(id: string) {
   await deleteDoc(doc(db, "notifications", id));
 }
 
-export function listenToScheduledNotifications(
-  callback: (items: ScheduledNotification[]) => void,
-): Unsubscribe {
-  const q = query(
-    collection(db, "scheduledNotifications"),
-    orderBy("scheduledAt", "desc"),
-  );
-  return onSnapshot(q, (snap) => {
-    callback(
-      snap.docs.map((d) => ({
-        id: d.id,
-        ...(d.data() as Omit<ScheduledNotification, "id">),
-      })),
-    );
-  });
-}
-
-export async function savePushToken(uid: string, token: string) {
-  await updateDoc(doc(db, "users", uid), { fcmToken: token });
+export async function deleteScheduledNotification(id: string) {
+  await deleteDoc(doc(db, "scheduledNotifications", id));
 }
 
 export function listenToNotifications(
@@ -103,5 +93,22 @@ export function listenToNotifications(
     }));
 
     callback(data);
+  });
+}
+
+export function listenToScheduledNotifications(
+  callback: (items: ScheduledNotification[]) => void,
+): Unsubscribe {
+  const q = query(
+    collection(db, "scheduledNotifications"),
+    orderBy("scheduledAt", "desc"),
+  );
+  return onSnapshot(q, (snap) => {
+    callback(
+      snap.docs.map((d) => ({
+        id: d.id,
+        ...(d.data() as Omit<ScheduledNotification, "id">),
+      })),
+    );
   });
 }

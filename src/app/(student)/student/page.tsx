@@ -6,7 +6,7 @@ import SectionTitle from "@/components/ui/SectionTitle";
 import Button from "@/components/ui/Button";
 import Link from "next/link";
 
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 
 import { useDashboardData } from "@/app/(student)/features/useDashboardData";
 
@@ -106,6 +106,16 @@ export default function HomePage() {
       ) : (
         <RecentExamsSection data={data} />
       )}
+
+      <Link
+        href="/student/jude"
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-full shadow-lg hover:shadow-blue-500/30 transition-all duration-200 group"
+      >
+        <Sparkles size={18} />
+        <span className="text-sm font-medium max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 whitespace-nowrap">
+          Ask JudeAI
+        </span>
+      </Link>
     </AppShell>
   );
 }

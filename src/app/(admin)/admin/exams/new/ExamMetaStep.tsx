@@ -6,7 +6,7 @@ import Button from "@/components/ui/Button";
 import Loader from "@/components/ui/Loader";
 import { ExamDraft } from "./types";
 
-type Course = { slug: string; title: string };
+type Course = { slug: string; title: string; level: number; semester: number };
 
 const DIFFICULTIES = ["Easy", "Medium", "Hard"] as const;
 const TYPES = ["Midsem", "End of Sem", "Topic", "Quiz"] as const;
@@ -27,6 +27,7 @@ function slugify(str: string) {
 
 export default function ExamMetaStep({ draft, onChange, onNext }: Props) {
   const [courses, setCourses] = useState<Course[]>([]);
+  const selectedCourse = courses.find((c) => c.slug === draft.courseSlug);
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [errors, setErrors] = useState<
     Partial<Record<keyof ExamDraft, string>>
@@ -100,6 +101,12 @@ export default function ExamMetaStep({ draft, onChange, onNext }: Props) {
         )}
         {errors.courseSlug && (
           <p className="text-xs text-red-400 mt-1">{errors.courseSlug}</p>
+        )}
+        {selectedCourse && (
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
+            Level {selectedCourse.level} &middot; Semester{" "}
+            {selectedCourse.semester}
+          </p>
         )}
       </div>
 

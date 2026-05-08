@@ -19,7 +19,7 @@ export default function AuthRedirect({
     }
   }, [user, loading, isAdmin, router]);
 
-  if (loading) {
+  if (loading || user) {
     return <Loader label="Checking session..." fullPage size="lg" />;
   }
 

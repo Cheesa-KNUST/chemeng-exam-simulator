@@ -14,6 +14,7 @@ import {
   createNotification,
   scheduleNotification,
   deleteNotification,
+  deleteScheduledNotification,
   listenToNotifications,
   listenToScheduledNotifications,
   type Notification,
@@ -38,6 +39,12 @@ export default function AdminNotificationsPage() {
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [scheduled, setScheduled] = useState<ScheduledNotification[]>([]);
+
+  const [targetLevel, setTargetLevel] = useState("");
+  const [targetSemester, setTargetSemester] = useState("");
+  const [targetProgram, setTargetProgram] = useState("");
+
+  const isTargeted = targetLevel || targetSemester || targetProgram;
 
   useEffect(() => {
     const unsub1 = listenToNotifications(setNotifications);
@@ -67,17 +74,31 @@ export default function AdminNotificationsPage() {
           type,
           scheduledAt: Timestamp.fromDate(new Date(scheduledAt)),
           createdBy: uid,
-          targetAudience: "all",
+          targetAudience: isTargeted ? "specific" : "all",
+          targetLevel: targetLevel || undefined,
+          targetSemester: targetSemester || undefined,
+          targetProgram: targetProgram || undefined,
         });
         toast("Notification scheduled", true);
       } else {
-        await createNotification({ title, message, type });
+        await createNotification({
+          title,
+          message,
+          type,
+          targetAudience: isTargeted ? "specific" : "all",
+          targetLevel: targetLevel || undefined,
+          targetSemester: targetSemester || undefined,
+          targetProgram: targetProgram || undefined,
+        });
         toast("Notification sent", true);
       }
 
       setTitle("");
       setMessage("");
       setScheduledAt("");
+      setTargetLevel("");
+      setTargetProgram("");
+      setTargetSemester("");
     } catch (err) {
       console.error(err);
       toast("Failed to send notification", false);
@@ -177,6 +198,80 @@ export default function AdminNotificationsPage() {
           </div>
         )}
 
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-slate-500 dark:text-slate-400">
+            Target Audience{" "}
+            <span className="text-xs font-normal text-slate-400">
+              (leave blank to send to everyone)
+            </span>
+          </label>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div className="space-y-1">
+              <label className="text-xs text-slate-400">Program</label>
+              <select
+                value={targetProgram}
+                onChange={(e) => setTargetProgram(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All programs</option>
+                {["Chemical Engineering", "Petrochemical Engineering"].map(
+                  (p) => (
+                    <option key={p} value={p}>
+                      {p}
+                    </option>
+                  ),
+                )}
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-slate-400">Level</label>
+              <select
+                value={targetLevel}
+                onChange={(e) => setTargetLevel(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All levels</option>
+                {["100", "200", "300", "400"].map((l) => (
+                  <option key={l} value={l}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs text-slate-400">Semester</label>
+              <select
+                value={targetSemester}
+                onChange={(e) => setTargetSemester(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">All semesters</option>
+                {["1", "2"].map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {isTargeted && (
+            <p className="text-xs text-blue-500 dark:text-blue-400">
+              Sending to:{" "}
+              {[
+                targetLevel && `Level ${targetLevel}`,
+                targetSemester && `Semester ${targetSemester}`,
+                targetProgram,
+              ]
+                .filter(Boolean)
+                .join(", ")}
+            </p>
+          )}
+        </div>
+
         <Button
           variant="primary"
           onClick={handleSend}
@@ -220,7 +315,7 @@ export default function AdminNotificationsPage() {
               </div>
 
               <button
-                onClick={() => deleteNotification(s.id)}
+                onClick={() => deleteScheduledNotification(s.id)}
                 className="text-slate-500 hover:text-red-400 transition-colors"
               >
                 <Trash2 size={16} />

@@ -35,13 +35,9 @@ export default function LoginPage() {
     try {
       setLoading(true);
       setError("");
-
       await loginUser(email, password, rememberMe);
-
-      router.replace("/");
     } catch {
       setError("Invalid credentials.");
-    } finally {
       setLoading(false);
     }
   };
@@ -55,12 +51,9 @@ export default function LoginPage() {
 
       if (isNewUser) {
         router.replace("/onboarding");
-      } else {
-        router.replace("/");
       }
     } catch {
       setError("Google signup failed.");
-    } finally {
       setLoading(false);
     }
   };

@@ -58,7 +58,7 @@ type UserSettings = {
 };
 
 export default function NotificationsPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   const [settings, setSettings] = useState<UserSettings>({
     notifications: true,
@@ -83,10 +83,10 @@ export default function NotificationsPage() {
     const unsub = listenToNotifications((data) => {
       setNotifications(data);
       setLoading(false);
-    });
+    }, profile);
 
     return () => unsub();
-  }, [user, settings.notifications]);
+  }, [user, settings.notifications, profile]);
 
   return (
     <AppShell>
