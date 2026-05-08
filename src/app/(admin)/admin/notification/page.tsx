@@ -44,7 +44,7 @@ export default function AdminNotificationsPage() {
   const [targetSemester, setTargetSemester] = useState("");
   const [targetProgram, setTargetProgram] = useState("");
 
-  const isTargeted = targetLevel || targetSemester || targetProgram;
+  const isTargeted = Boolean(targetLevel || targetSemester || targetProgram);
 
   useEffect(() => {
     const unsub1 = listenToNotifications(setNotifications);
@@ -75,9 +75,10 @@ export default function AdminNotificationsPage() {
           scheduledAt: Timestamp.fromDate(new Date(scheduledAt)),
           createdBy: uid,
           targetAudience: isTargeted ? "specific" : "all",
-          targetLevel: targetLevel || undefined,
-          targetSemester: targetSemester || undefined,
-          targetProgram: targetProgram || undefined,
+
+          ...(targetLevel && { targetLevel }),
+          ...(targetSemester && { targetSemester }),
+          ...(targetProgram && { targetProgram }),
         });
         toast("Notification scheduled", true);
       } else {
@@ -86,15 +87,17 @@ export default function AdminNotificationsPage() {
           message,
           type,
           targetAudience: isTargeted ? "specific" : "all",
-          targetLevel: targetLevel || undefined,
-          targetSemester: targetSemester || undefined,
-          targetProgram: targetProgram || undefined,
+
+          ...(targetLevel && { targetLevel }),
+          ...(targetSemester && { targetSemester }),
+          ...(targetProgram && { targetProgram }),
         });
         toast("Notification sent", true);
       }
 
       setTitle("");
       setMessage("");
+      setIsScheduled(false);
       setScheduledAt("");
       setTargetLevel("");
       setTargetProgram("");

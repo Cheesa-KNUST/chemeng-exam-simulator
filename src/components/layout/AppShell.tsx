@@ -11,11 +11,15 @@ type Props = {
 
 export default function AppShell({ children }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
     <div className="flex bg-slate-100 dark:bg-slate-900 min-h-screen">
       <div className="hidden lg:block h-screen sticky top-0">
-        <Sidebar />
+        <Sidebar
+          collapsed={collapsed}
+          onToggleCollapse={() => setCollapsed((p) => !p)}
+        />
       </div>
 
       <MobileSidebar isOpen={mobileOpen} onClose={() => setMobileOpen(false)} />

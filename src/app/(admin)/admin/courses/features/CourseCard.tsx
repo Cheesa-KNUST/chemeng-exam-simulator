@@ -15,7 +15,7 @@ export default function CourseCard({ course, onEdit, onDelete }: Props) {
           {course.title}
         </h3>
         <p className="text-xs font-mono text-slate-400 mt-0.5">{course.slug}</p>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+        <p className="text-sm text-justify text-slate-500 dark:text-slate-400 mt-2">
           {course.description}
         </p>
         <div className="mt-3 flex flex-wrap gap-2">

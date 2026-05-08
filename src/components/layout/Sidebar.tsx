@@ -8,16 +8,22 @@ import {
   adminNavItems,
   bottomNav,
 } from "./navItems";
-import { X, LogOut } from "lucide-react";
+import { LogOut, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
 import { logoutUser } from "@/context/authService";
 import { useAuth } from "@/context/AuthContext";
 
 type SidebarProps = {
   onClose?: () => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
 };
 
-export default function Sidebar({ onClose }: SidebarProps) {
+export default function Sidebar({
+  onClose,
+  collapsed = false,
+  onToggleCollapse,
+}: SidebarProps) {
   const pathname = usePathname();
   const { profile, isAdmin, setLoggingOut } = useAuth();
 
@@ -66,6 +72,8 @@ export default function Sidebar({ onClose }: SidebarProps) {
 
   const navLinkClass = (href: string) =>
     `w-full px-3 py-2.5 rounded-xl flex items-center gap-3 text-sm transition-all ${
+      collapsed ? "justify-center" : ""
+    } ${
       isActive(href)
         ? "bg-blue-600 text-white shadow-lg shadow-blue-900/30"
         : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
@@ -75,31 +83,46 @@ export default function Sidebar({ onClose }: SidebarProps) {
   const botNav = isAdmin ? bottomNav : bottomNavItems;
 
   return (
-    <aside className="w-64 min-h-screen p-5 flex flex-col bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 transition-colors">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-            CHEM<span className="text-blue-500 dark:text-blue-400">ENG</span>
-          </h2>
-          <p className="text-slate-400 dark:text-slate-500 text-xs mt-0.5 uppercase tracking-widest">
-            Assessment System
-          </p>
-        </div>
+    <aside
+      className={`${
+        collapsed ? "w-18" : "w-64"
+      } min-h-screen p-3 flex flex-col bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 transition-[width] duration-300 ease-in-out overflow-hidden`}
+    >
+      <div className="mb-8 flex items-center justify-between min-w-0">
+        {!collapsed && (
+          <div className="truncate">
+            <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+              CHEM<span className="text-blue-500 dark:text-blue-400">ENG</span>
+            </h2>
+            <p className="text-slate-400 dark:text-slate-500 text-xs mt-0.5 uppercase tracking-widest">
+              Assessment System
+            </p>
+          </div>
+        )}
 
-        {onClose && (
+        {onToggleCollapse && (
           <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition lg:hidden"
+            onClick={onToggleCollapse}
+            className={`text-slate-400 hover:text-slate-700 dark:hover:text-white transition shrink-0 ${
+              collapsed ? "mx-auto" : "ml-auto"
+            }`}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            <X size={20} />
+            {collapsed ? (
+              <PanelLeftOpen size={20} />
+            ) : (
+              <PanelLeftClose size={20} />
+            )}
           </button>
         )}
       </div>
 
       <nav className="space-y-1 flex-1">
-        <p className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-widest px-3 mb-3">
-          Menu
-        </p>
+        {!collapsed && (
+          <p className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-widest px-3 mb-3">
+            Menu
+          </p>
+        )}
 
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -111,11 +134,16 @@ export default function Sidebar({ onClose }: SidebarProps) {
               href={item.href}
               onClick={onClose}
               className={navLinkClass(item.href)}
+              title={collapsed ? item.label : undefined}
             >
-              <Icon size={18} strokeWidth={1.8} />
-              {item.label}
-              {active && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white/70" />
+              <Icon size={18} strokeWidth={1.8} className="shrink-0" />
+              {!collapsed && (
+                <>
+                  {item.label}
+                  {active && (
+                    <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white/70" />
+                  )}
+                </>
               )}
             </Link>
           );
@@ -123,9 +151,11 @@ export default function Sidebar({ onClose }: SidebarProps) {
       </nav>
 
       <div className="mt-6">
-        <p className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-widest px-3 mb-3">
-          More
-        </p>
+        {!collapsed && (
+          <p className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-widest px-3 mb-3">
+            More
+          </p>
+        )}
 
         <div className="space-y-1">
           {botNav.map((item) => {
@@ -136,9 +166,10 @@ export default function Sidebar({ onClose }: SidebarProps) {
                 href={item.href}
                 onClick={onClose}
                 className={navLinkClass(item.href)}
+                title={collapsed ? item.label : undefined}
               >
-                <Icon size={18} strokeWidth={1.8} />
-                {item.label}
+                <Icon size={18} strokeWidth={1.8} className="shrink-0" />
+                {!collapsed && item.label}
               </Link>
             );
           })}
@@ -146,23 +177,30 @@ export default function Sidebar({ onClose }: SidebarProps) {
       </div>
 
       <div className="mt-6 border-t border-slate-100 dark:border-slate-800 pt-4">
-        <div className="flex items-center justify-between px-2">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold text-white shrink-0">
-              {avatarLetter}
+        <div
+          className={`flex items-center px-2 ${
+            collapsed ? "justify-center" : "justify-between"
+          }`}
+        >
+          {!collapsed && (
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-sm font-bold text-white shrink-0">
+                {avatarLetter}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-slate-800 dark:text-white truncate max-w-30">
+                  {displayName}
+                </p>
+                <p className="text-xs text-slate-400 dark:text-slate-500">
+                  {shortProgram}
+                </p>
+              </div>
             </div>
+          )}
 
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-slate-800 dark:text-white truncate max-w-30">
-                {displayName}
-              </p>
-              <p className="text-xs text-slate-400 dark:text-slate-500">
-                {shortProgram}
-              </p>
-            </div>
-          </div>
-
-          <div className="h-8 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
+          {!collapsed && (
+            <div className="h-8 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
+          )}
 
           <button
             onClick={handleLogout}
