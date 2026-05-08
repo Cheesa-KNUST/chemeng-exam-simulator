@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   HelpCircle,
   BookOpen,
@@ -11,6 +12,7 @@ import {
   ArrowDown,
 } from "lucide-react";
 import AppShell from "@/components/layout/AppShell";
+import Button from "@/components/ui/Button";
 
 function SectionTitle({
   icon,
@@ -158,6 +160,10 @@ export default function HelpPage() {
           For additional support, contact CHEESA Tratech Committee.
         </div>
       </div>
+
+      <Link href="">
+        <Button title="Share with us your experience" />
+      </Link>
     </AppShell>
   );
 }
