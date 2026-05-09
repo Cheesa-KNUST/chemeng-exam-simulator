@@ -29,7 +29,8 @@ export default function Sidebar({
 
   const isStudentActive = (href: string) => {
     if (href === "/student") return pathname === "/student";
-    return pathname.startsWith(href);
+    if (href === "/student/rooms") return pathname === "/student/rooms";
+    return pathname === href;
   };
 
   const isAdminActive = (href: string) => {

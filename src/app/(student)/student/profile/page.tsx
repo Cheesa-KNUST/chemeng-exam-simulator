@@ -97,6 +97,7 @@ export default function ProfileSettingsPage() {
   const [level, setLevel] = useState<(typeof LEVELS)[number] | "">("");
   const [program, setProgram] = useState("");
   const [semester, setSemester] = useState<(typeof SEMESTERS)[number] | "">("");
+  const uid = user?.uid;
 
   useEffect(() => {
     if (!user) return;
@@ -210,7 +211,7 @@ export default function ProfileSettingsPage() {
                 <Input
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Kwame Atta Fiifi Forson"
+                  placeholder="CHEESA Tratech"
                 />
               </div>
 
@@ -221,7 +222,7 @@ export default function ProfileSettingsPage() {
                 <Input
                   value={email}
                   disabled
-                  className="opacity-60 cursor-not-allowed"
+                  className="opacity-80 cursor-not-allowed"
                 />
               </div>
 
@@ -233,6 +234,17 @@ export default function ProfileSettingsPage() {
                   value={program}
                   onChange={(e) => setProgram(e.target.value)}
                   placeholder="e.g. Chemical Engineering"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                  Unique Identity Code
+                </label>
+                <Input
+                  value={uid}
+                  disabled
+                  className="opacity-80 cursor-not-allowed"
                 />
               </div>
 

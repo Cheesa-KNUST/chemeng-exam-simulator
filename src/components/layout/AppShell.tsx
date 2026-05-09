@@ -9,17 +9,42 @@ type Props = {
   children: ReactNode;
 };
 
+function usePersistentState(key: string, initialValue: boolean) {
+  const [state, setState] = useState(() => {
+    if (typeof window === "undefined") return initialValue;
+    return localStorage.getItem(key) === "true";
+  });
+
+  const setPersistentState = (value: boolean | ((v: boolean) => boolean)) => {
+    setState((prev) => {
+      const next = typeof value === "function" ? value(prev) : value;
+      localStorage.setItem(key, String(next));
+      return next;
+    });
+  };
+
+  return [state, setPersistentState] as const;
+}
+
 export default function AppShell({ children }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = usePersistentState(
+    "sidebar-collapsed",
+    false,
+  );
+
+  const toggleCollapse = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem("sidebar-collapsed", String(next));
+      return next;
+    });
+  };
 
   return (
     <div className="flex bg-slate-100 dark:bg-slate-900 min-h-screen">
       <div className="hidden lg:block h-screen sticky top-0">
-        <Sidebar
-          collapsed={collapsed}
-          onToggleCollapse={() => setCollapsed((p) => !p)}
-        />
+        <Sidebar collapsed={collapsed} onToggleCollapse={toggleCollapse} />
       </div>
 
       <MobileSidebar isOpen={mobileOpen} onClose={() => setMobileOpen(false)} />

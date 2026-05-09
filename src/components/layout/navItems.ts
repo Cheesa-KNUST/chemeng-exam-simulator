@@ -5,7 +5,7 @@ import {
   Settings,
   HelpCircle,
   Sparkles,
-  History,
+  DoorOpen,
   FileText,
   PlusCircle,
   Mail,
@@ -28,9 +28,9 @@ export const topNavItems = [
     icon: BookOpen,
   },
   {
-    label: "Exam History",
-    href: "/student/history",
-    icon: History,
+    label: "Study Lobby",
+    href: "/student/rooms",
+    icon: DoorOpen,
   },
 ];
 
@@ -40,11 +40,6 @@ export const bottomNavItems = [
     href: "/student/settings",
     icon: Settings,
   },
-  // {
-  //   label: "JudeAI",
-  //   href: "/student/jude",
-  //   icon: Sparkles,
-  // },
   {
     label: "Help",
     href: "/student/help",
