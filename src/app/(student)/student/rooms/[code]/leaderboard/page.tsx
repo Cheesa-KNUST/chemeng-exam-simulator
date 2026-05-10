@@ -65,7 +65,11 @@ export default function LeaderboardPage() {
   }, [data, fetchLeaderboard]);
 
   if (loading)
-    return <Loader fullPage size="lg" label="Loading leaderboard..." />;
+    return (
+      <AppShell>
+        <Loader size="lg" label="Loading leaderboard..." />
+      </AppShell>
+    );
 
   if (error || !data) {
     return (

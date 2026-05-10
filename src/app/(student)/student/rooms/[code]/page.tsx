@@ -253,9 +253,7 @@ export default function RoomLobbyPage() {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Left column — room info + start */}
         <div className="lg:col-span-1 space-y-4">
-          {/* Room code card */}
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
             <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-2">
               Room code
@@ -281,7 +279,6 @@ export default function RoomLobbyPage() {
             </p>
           </div>
 
-          {/* Settings summary */}
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
             <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">
               Settings
@@ -310,7 +307,6 @@ export default function RoomLobbyPage() {
             </div>
           </div>
 
-          {/* Start / status */}
           {!isClosed && (
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
               {!myParticipant ? (
@@ -403,7 +399,6 @@ export default function RoomLobbyPage() {
           )}
         </div>
 
-        {/* Right column — participants */}
         <div className="lg:col-span-2">
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-4">

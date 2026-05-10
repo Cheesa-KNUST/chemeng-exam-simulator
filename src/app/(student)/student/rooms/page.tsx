@@ -53,7 +53,7 @@ export default function RoomsPage() {
   if (loading)
     return (
       <AppShell>
-        <Loader size="lg" label="Loading rooms..." />;
+        <Loader size="lg" label="Loading rooms..." />
       </AppShell>
     );
 
@@ -63,14 +63,24 @@ export default function RoomsPage() {
         title="Exam Rooms"
         subtitle="Join a room to compete with friends or create your own"
         action={
-          <Link href="/student/rooms/create">
-            <Button variant="primary">
-              <span className="flex items-center gap-2">
-                <Plus size={15} />
-                Create room
-              </span>
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/student/rooms/join">
+              <Button variant="secondary" className="bg-slate-300">
+                <span className="flex items-center gap-2">
+                  <LogIn size={15} />
+                  Join room
+                </span>
+              </Button>
+            </Link>
+            <Link href="/student/rooms/create">
+              <Button variant="primary">
+                <span className="flex items-center gap-2">
+                  <Plus size={15} />
+                  Create room
+                </span>
+              </Button>
+            </Link>
+          </div>
         }
       />
 
