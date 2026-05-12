@@ -174,6 +174,9 @@ export default function CourseFormModal({
               <Input
                 type="number"
                 value={form.level}
+                step={100}
+                min={100}
+                max={400}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, level: Number(e.target.value) }))
                 }
@@ -183,6 +186,9 @@ export default function CourseFormModal({
               <label className="text-sm">Semester</label>
               <Input
                 type="number"
+                step={1}
+                min={1}
+                max={2}
                 value={form.semester}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, semester: Number(e.target.value) }))
