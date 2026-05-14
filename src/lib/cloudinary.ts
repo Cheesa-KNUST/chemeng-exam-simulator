@@ -1,40 +1,62 @@
-export async function uploadToCloudinary(file: File): Promise<{
+export function uploadToCloudinary(
+  file: File,
+  onProgress?: (percent: number) => void,
+): Promise<{
   url: string;
   publicId: string;
   size: number;
   fileName: string;
   resourceType: string;
 }> {
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+  return new Promise((resolve, reject) => {
+    const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
-  if (!cloudName || !uploadPreset) {
-    throw new Error("Cloudinary environment variables are not set.");
-  }
+    if (!cloudName || !uploadPreset) {
+      reject(new Error("Cloudinary environment variables are not set."));
+      return;
+    }
 
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", uploadPreset);
-  formData.append("folder", "chemeng-materials");
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", uploadPreset);
+    formData.append("folder", "chemeng-materials");
 
-  const res = await fetch(
-    `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
-    { method: "POST", body: formData },
-  );
+    const xhr = new XMLHttpRequest();
 
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.error?.message ?? "Cloudinary upload failed.");
-  }
+    xhr.open(
+      "POST",
+      `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+    );
 
-  const data = await res.json();
-  return {
-    url: data.secure_url,
-    publicId: data.public_id,
-    size: data.bytes,
-    fileName: file.name,
-    resourceType: data.resource_type,
-  };
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable && onProgress) {
+        const percent = Math.round((event.loaded / event.total) * 100);
+        onProgress(percent);
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status !== 200) {
+        reject(new Error("Upload failed. File too large....."));
+        return;
+      }
+
+      const data = JSON.parse(xhr.responseText);
+
+      resolve({
+        url: data.secure_url,
+        publicId: data.public_id,
+        size: data.bytes,
+        fileName: file.name,
+        resourceType: data.resource_type,
+      });
+    };
+
+    xhr.onerror = () => reject(new Error("Upload failed"));
+
+    xhr.send(formData);
+  });
 }
 
 export async function deleteFromCloudinary(

@@ -31,6 +31,8 @@ export default function StudentSubmitModal({ onClose, onSuccess }: Props) {
   const [tagInput, setTagInput] = useState("");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [progress, setProgress] = useState(0);
+  const [showHelp, setShowHelp] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const set = (key: keyof typeof INITIAL_FORM, value: string) =>
@@ -54,10 +56,11 @@ export default function StudentSubmitModal({ onClose, onSuccess }: Props) {
     if (!file) return setError("Please select a file to upload.");
 
     try {
+      setProgress(0);
       setUploading(true);
 
       const { url, publicId, size, fileName, resourceType } =
-        await uploadToCloudinary(file);
+        await uploadToCloudinary(file, setProgress);
 
       const input: MaterialInput = {
         title: form.title.trim(),
@@ -89,6 +92,8 @@ export default function StudentSubmitModal({ onClose, onSuccess }: Props) {
 
   const INPUT_CLASS =
     "w-full h-10 px-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500";
+
+  const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -128,7 +133,7 @@ export default function StudentSubmitModal({ onClose, onSuccess }: Props) {
             className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-6 flex flex-col items-center gap-2 cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 transition-colors"
           >
             <Upload size={20} className="text-slate-400" />
-            <p className="text-sm text-slate-500 dark:text-slate-400 text-center">
+            <div className="text-sm text-slate-500 dark:text-slate-400 text-center">
               {file ? (
                 <span className="text-blue-600 dark:text-blue-400 font-medium">
                   {file.name}
@@ -143,15 +148,52 @@ export default function StudentSubmitModal({ onClose, onSuccess }: Props) {
                   <span className="text-xs">PDF, Word, PowerPoint, Images</span>
                 </>
               )}
-            </p>
+              {file && (
+                <div className="text-xs text-slate-500 mt-1">
+                  Size: {(file.size / (1024 * 1024)).toFixed(2)} MB
+                </div>
+              )}
+            </div>
             <input
               ref={fileRef}
               type="file"
               className="hidden"
               accept=".pdf,.doc,.docx,.ppt,.pptx,.png,.jpg,.jpeg,.webp"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (!f) return;
+
+                if (f.size > MAX_SIZE) {
+                  setError(
+                    "File is too large (max 10MB). Please compress it before uploading.",
+                  );
+                  setFile(null);
+                  return;
+                }
+
+                setError("");
+                setFile(f);
+              }}
             />
           </div>
+
+          {error && (
+            <div className="space-y-2">
+              <p className="text-sm text-red-500 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 px-3 py-2 rounded-lg">
+                {error}
+              </p>
+
+              {error.toLowerCase().includes("too large") && (
+                <button
+                  type="button"
+                  onClick={() => setShowHelp(true)}
+                  className="text-xs text-blue-600 hover:underline"
+                >
+                  File too large? See compression tips
+                </button>
+              )}
+            </div>
+          )}
 
           <input
             type="text"
@@ -237,10 +279,20 @@ export default function StudentSubmitModal({ onClose, onSuccess }: Props) {
             )}
           </div>
 
-          {error && (
-            <p className="text-sm text-red-500 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 px-3 py-2 rounded-lg">
-              {error}
-            </p>
+          {uploading && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs text-slate-500">
+                <span>Uploading...</span>
+                <span>{progress}%</span>
+              </div>
+
+              <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+                <div
+                  className="h-full bg-blue-600 transition-all"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
           )}
         </div>
 
@@ -271,6 +323,51 @@ export default function StudentSubmitModal({ onClose, onSuccess }: Props) {
           </button>
         </div>
       </div>
+
+      {showHelp && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-900 max-w-md w-full rounded-2xl p-5 space-y-3">
+            <h2 className="text-base font-bold">File Size Help</h2>
+
+            <p className="text-sm text-slate-600 dark:text-slate-300">
+              If your file is too large, you can compress it using these tools:
+            </p>
+
+            <ul className="text-sm space-y-2">
+              <li>
+                <a
+                  className="text-blue-600 underline"
+                  href="https://www.ilovepdf.com/compress_pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  iLovePDF Compressor
+                </a>
+              </li>
+              <li>
+                <a
+                  className="text-blue-600 underline"
+                  href="https://smallpdf.com/compress-pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  SmallPDF
+                </a>
+              </li>
+              <li>Use Google Drive export (reduces size automatically)</li>
+            </ul>
+
+            <p className="text-xs text-slate-500">Recommended max size: 10MB</p>
+
+            <button
+              onClick={() => setShowHelp(false)}
+              className="mt-2 w-full h-10 rounded-lg bg-blue-600 text-white"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

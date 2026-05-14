@@ -33,6 +33,7 @@ export default function AdminUploadModal({ onClose, onSuccess }: Props) {
   const [tagInput, setTagInput] = useState("");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [progress, setProgress] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const set = (key: keyof typeof INITIAL_FORM, value: string) =>
@@ -59,6 +60,7 @@ export default function AdminUploadModal({ onClose, onSuccess }: Props) {
     if (!isVideo && !file) return setError("Please select a file to upload.");
 
     try {
+      setProgress(0);
       setUploading(true);
 
       let input: MaterialInput;
@@ -83,7 +85,7 @@ export default function AdminUploadModal({ onClose, onSuccess }: Props) {
         };
       } else {
         const { url, publicId, size, fileName, resourceType } =
-          await uploadToCloudinary(file!);
+          await uploadToCloudinary(file!, setProgress);
 
         input = {
           title: form.title.trim(),
@@ -288,6 +290,22 @@ export default function AdminUploadModal({ onClose, onSuccess }: Props) {
             <p className="text-sm text-red-500 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 px-3 py-2 rounded-lg">
               {error}
             </p>
+          )}
+
+          {uploading && (
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs text-slate-500">
+                <span>Uploading...</span>
+                <span>{progress}%</span>
+              </div>
+
+              <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+                <div
+                  className="h-full bg-blue-600 transition-all"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
           )}
         </div>
 

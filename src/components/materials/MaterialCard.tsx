@@ -13,6 +13,7 @@ import {
   XCircle,
   Trash2,
   ExternalLink,
+  Eye,
 } from "lucide-react";
 import { Material, formatFileSize } from "@/lib/materialService";
 
@@ -133,6 +134,9 @@ export default function MaterialCard({
       <div className="px-4 py-3 flex-1 space-y-3">
         {material.description && (
           <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">
+            <span className="font-medium text-slate-700 dark:text-slate-300">
+              Description:{" "}
+            </span>
             {material.description}
           </p>
         )}
@@ -193,7 +197,11 @@ export default function MaterialCard({
             {formattedDate}
           </span>
           <span className="flex items-center gap-1">
-            <Download size={11} />
+            {material.fileType === "video" ? (
+              <Eye size={11} />
+            ) : (
+              <Download size={11} />
+            )}
             {material.downloadCount}
           </span>
           {isAdmin && (
