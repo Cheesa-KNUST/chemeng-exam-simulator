@@ -9,6 +9,8 @@ import {
   FileText,
   PlusCircle,
   Mail,
+  LibraryBig,
+  Upload,
 } from "lucide-react";
 
 export const topNavItems = [
@@ -26,6 +28,11 @@ export const topNavItems = [
     label: "Courses",
     href: "/student/courses",
     icon: BookOpen,
+  },
+  {
+    label: "Reference Materials",
+    href: "/student/materials",
+    icon: LibraryBig,
   },
   {
     label: "Study Lobby",
@@ -67,6 +74,11 @@ export const adminNavItems = [
     label: "Create Exams",
     href: "/admin/exams/new",
     icon: PlusCircle,
+  },
+  {
+    label: "Materials Upload",
+    href: "/admin/materials",
+    icon: Upload,
   },
 ];
 

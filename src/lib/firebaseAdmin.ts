@@ -1,5 +1,6 @@
 import { initializeApp, getApps, cert, App } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
+import { getAuth } from "firebase-admin/auth";
 
 const app: App =
   getApps().length === 0
@@ -13,3 +14,4 @@ const app: App =
     : getApps()[0];
 
 export const adminDb = getFirestore(app);
+export const adminAuth = getAuth(app);

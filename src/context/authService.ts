@@ -11,6 +11,7 @@ import {
   setPersistence,
   browserLocalPersistence,
   browserSessionPersistence,
+  User,
 } from "firebase/auth";
 
 import { auth, db } from "@/lib/firebase";
@@ -58,7 +59,6 @@ export async function loginWithGoogle(rememberMe: boolean) {
   );
 
   const provider = new GoogleAuthProvider();
-
   const result = await signInWithPopup(auth, provider);
 
   const ref = doc(db, "users", result.user.uid);
@@ -79,6 +79,7 @@ export async function signupWithGoogle() {
 }
 
 export async function logoutUser() {
+  await fetch("/api/admin/logout", { method: "POST" });
   return await signOut(auth);
 }
 
@@ -96,8 +97,19 @@ export async function deleteAccount(password?: string) {
     await reauthenticateWithCredential(user, credential);
   }
 
+  await fetch("/api/admin/logout", { method: "POST" });
+
   await deleteDoc(doc(db, "users", user.uid));
   await resetUserExams(user.uid);
 
   await deleteUser(user);
+}
+
+export async function createAdminSession(user: User) {
+  const idToken = await user.getIdToken(true);
+  await fetch("/api/admin/create-session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ idToken }),
+  });
 }
