@@ -56,7 +56,8 @@ export default function StudentSubmitModal({ onClose, onSuccess }: Props) {
     try {
       setUploading(true);
 
-      const { url, publicId, size, fileName } = await uploadToCloudinary(file);
+      const { url, publicId, size, fileName, resourceType } =
+        await uploadToCloudinary(file);
 
       const input: MaterialInput = {
         title: form.title.trim(),
@@ -73,6 +74,7 @@ export default function StudentSubmitModal({ onClose, onSuccess }: Props) {
         uploadedBy: uid ?? "",
         uploaderName: profile?.username ?? "Student",
         size,
+        resourceType,
       };
 
       await addMaterial(input);
