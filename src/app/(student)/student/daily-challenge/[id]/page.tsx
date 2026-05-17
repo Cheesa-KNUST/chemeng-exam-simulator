@@ -14,25 +14,48 @@ import Image from "next/image";
 import ExamShell from "@/components/exam/ExamShell";
 import ChallengeSidebar from "@/components/dailychallenge/ChallengeSidebar";
 
-function useTimer(durationMinutes: number, onExpire: () => void) {
-  const [elapsed, setElapsed] = useState(0);
+function useTimer(
+  challengeId: string | null,
+  durationMinutes: number,
+  onExpire: () => void,
+) {
   const total = durationMinutes * 60;
+  const storageKey = challengeId ? `challenge-start:${challengeId}` : null;
+
+  const calcElapsed = (key: string | null, tot: number): number => {
+    if (!key) return 0;
+    try {
+      const stored = localStorage.getItem(key);
+      if (!stored) {
+        localStorage.setItem(key, String(Date.now()));
+        return 0;
+      }
+      return Math.min(tot, Math.floor((Date.now() - Number(stored)) / 1000));
+    } catch {
+      return 0;
+    }
+  };
+
+  const [elapsed, setElapsed] = useState<number>(() =>
+    calcElapsed(storageKey, total),
+  );
   const remaining = total - elapsed;
 
   useEffect(() => {
+    if (!storageKey) return;
+
     const id = setInterval(() => {
-      setElapsed((e) => {
-        if (e + 1 >= total) {
-          clearInterval(id);
-          onExpire();
-          return total;
-        }
-        return e + 1;
-      });
+      const newElapsed = calcElapsed(storageKey, total);
+      setElapsed(newElapsed);
+      if (newElapsed >= total) {
+        clearInterval(id);
+        onExpire();
+      }
     }, 1000);
+
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [total]);
+  }, [storageKey, total]);
 
   const pct = Math.max(0, (remaining / total) * 100);
   const m = Math.floor(remaining / 60);
@@ -40,7 +63,7 @@ function useTimer(durationMinutes: number, onExpire: () => void) {
   const label = `${m}:${s.toString().padStart(2, "0")}`;
   const urgent = remaining <= 60;
 
-  return { elapsed, label, pct, urgent };
+  return { elapsed, label, pct, urgent, storageKey };
 }
 
 function PreambleCard({ item }: { item: PreambleBlock }) {
@@ -265,27 +288,25 @@ function QuestionCard({
 
       {item.kind === "fill_in" && (
         <input
-          type={
+          type="text"
+          inputMode={
             item.answerType === "number" || item.answerType === "range"
-              ? "number"
+              ? "decimal"
               : "text"
           }
           placeholder={
             item.answerType === "number" || item.answerType === "range"
-              ? "Enter a number…"
+              ? "Enter a number (e.g. 0.0000002)…"
               : "Type your answer…"
           }
           value={fillValue}
           onChange={(e) =>
             onChange({
               kind: "fill_in",
-              value:
-                item.answerType === "number" || item.answerType === "range"
-                  ? Number(e.target.value)
-                  : e.target.value,
+              value: e.target.value,
             })
           }
-          className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-800 dark:text-slate-100 outline-none focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-500/20 transition placeholder:text-slate-400"
+          className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm text-slate-800 dark:text-slate-100 outline-none focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-500/20 transition placeholder:text-slate-400 font-mono"
         />
       )}
     </div>
@@ -305,12 +326,7 @@ export default function DailyChallengePage() {
   const [expired, setExpired] = useState(false);
   const [activeQuestionId, setActiveQuestionId] = useState<string | null>(null);
 
-  const startedAt = useRef<number | null>(null);
   const questionRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
-  useEffect(() => {
-    startedAt.current = Date.now();
-  }, []);
 
   useEffect(() => {
     if (!user || !profile?.level) return;
@@ -340,9 +356,15 @@ export default function DailyChallengePage() {
     setSubmitting(true);
     setSubmitError(null);
 
-    const timeTaken = Math.round(
-      (Date.now() - (startedAt.current ?? Date.now())) / 1000,
-    );
+    const storageKey = `challenge-start:${challenge.id}`;
+    const startTime = (() => {
+      try {
+        return Number(localStorage.getItem(storageKey) ?? Date.now());
+      } catch {
+        return Date.now();
+      }
+    })();
+    const timeTaken = Math.round((Date.now() - startTime) / 1000);
 
     try {
       const res = await fetch("/api/daily-challenge/submit", {
@@ -362,6 +384,11 @@ export default function DailyChallengePage() {
         throw new Error(err.error ?? "Submission failed");
       }
 
+      try {
+        localStorage.removeItem(`challenge-start:${challenge.id}`);
+      } catch {
+        /* ignore */
+      }
       router.push(`/student/daily-challenge/${challenge.id}/results`);
     } catch (e) {
       if (!autoSubmit) {
@@ -371,10 +398,14 @@ export default function DailyChallengePage() {
     }
   };
 
-  const { label, pct, urgent } = useTimer(challenge?.duration ?? 15, () => {
-    setExpired(true);
-    handleSubmit(true);
-  });
+  const { label, pct, urgent } = useTimer(
+    challenge?.id ?? null,
+    challenge?.duration ?? 15,
+    () => {
+      setExpired(true);
+      handleSubmit(true);
+    },
+  );
 
   const handleJump = (questionId: string) => {
     setActiveQuestionId(questionId);
