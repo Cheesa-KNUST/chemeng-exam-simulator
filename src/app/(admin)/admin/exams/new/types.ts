@@ -62,6 +62,8 @@ export type ExamQuestion =
 export type ExamDraft = {
   id: string;
   courseSlug: string;
+  level: number | null;
+  semester: number | null;
   title: string;
   duration: number;
   difficulty: "Easy" | "Medium" | "Hard";

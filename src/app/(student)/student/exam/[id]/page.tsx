@@ -131,8 +131,6 @@ export default function ExamPage() {
       });
 
       setCompleted(true);
-
-      // Navigate to the persistent result page using the MongoDB resultId
       router.push(`/student/results/${resultId}`);
     } finally {
       setIsSubmitting(false);
@@ -200,12 +198,17 @@ export default function ExamPage() {
   const answeredCount = Object.keys(answers).length;
   const totalQuestions = questions.length;
 
-  const handleSubmitOrReview = () => {
+  const handleSubmitOrReview = async () => {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+
     if (allowReview) {
       router.push(`/student/exam/${exam!.id}/review`);
-    } else {
-      handleDirectSubmit();
+      return;
     }
+
+    await handleDirectSubmit();
   };
 
   if (examLoading || !isSettingsLoaded) {
@@ -255,6 +258,7 @@ export default function ExamPage() {
           onJump={setCurrent}
           onSubmit={handleSubmitOrReview}
           onToggleFlag={toggleFlag}
+          submitting={isSubmitting}
         />
       }
     >

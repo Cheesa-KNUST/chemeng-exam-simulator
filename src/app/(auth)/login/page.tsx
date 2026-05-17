@@ -226,7 +226,7 @@ export default function LoginPage() {
                   >
                     {rememberMe && <Check size={11} className="text-white" />}
                   </div>
-                  Remember me
+                  Stay signed in
                 </button>
                 <button
                   type="button"

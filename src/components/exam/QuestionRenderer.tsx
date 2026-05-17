@@ -147,8 +147,6 @@ function MCQOptions({
 function FillInInput({
   value,
   answerType = "text",
-  //   answerMin,
-  //   answerMax,
   onChange,
   disabled,
 }: {
@@ -174,11 +172,6 @@ function FillInInput({
 
   const placeholder = isNumeric ? "Enter a number…" : "Type your answer…";
 
-  //   const rangeHint =
-  //     answerType === "range" && answerMin !== undefined && answerMax !== undefined
-  //       ? `Accepted range: ${answerMin} - ${answerMax}`
-  //       : null;
-
   return (
     <div className="space-y-2">
       <input
@@ -196,11 +189,6 @@ function FillInInput({
           Please enter a valid number.
         </p>
       )}
-      {/* {rangeHint && (
-        <p className="text-xs text-slate-400 dark:text-slate-500 pl-1">
-          {rangeHint}
-        </p>
-      )} */}
     </div>
   );
 }

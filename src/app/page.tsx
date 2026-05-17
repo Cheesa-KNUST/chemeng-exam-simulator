@@ -321,6 +321,12 @@ export default function LandingPage() {
               >
                 Log in
               </Link>
+              <Link
+                href="/signup"
+                className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+              >
+                Sign Up
+              </Link>
             </div>
 
             <p className="text-xs text-slate-600">

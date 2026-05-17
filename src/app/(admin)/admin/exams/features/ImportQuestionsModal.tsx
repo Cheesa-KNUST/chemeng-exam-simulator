@@ -178,7 +178,7 @@ export default function ImportQuestionsModal({ onImport, onClose }: Props) {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5 no-scrollbar">
           <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl w-fit">
             {(["pdf", "json"] as const).map((m) => (
               <button
@@ -297,7 +297,7 @@ export default function ImportQuestionsModal({ onImport, onClose }: Props) {
                 </button>
               </div>
 
-              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-72 overflow-y-auto pr-1 no-scrollbar">
                 {extraction.questions.map((q, i) => (
                   <button
                     key={i}

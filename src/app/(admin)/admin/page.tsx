@@ -2,6 +2,7 @@
 
 import AppShell from "@/components/layout/AppShell";
 import PageHeader from "@/components/layout/PageHeader";
+import Button from "@/components/ui/Button";
 import Link from "next/link";
 import {
   BarChart,
@@ -186,12 +187,23 @@ export default function AdminHomePage() {
         title="Admin Dashboard"
         subtitle="Platform overview and analytics"
         action={
-          <Link href="/admin/exams/new">
-            <button className="flex items-center gap-1.5 h-10 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold transition-colors">
-              <PlusCircle size={15} />
-              New Exam
-            </button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/admin/courses">
+              <Button
+                variant="secondary"
+                className="bg-slate-300 flex items-center"
+              >
+                <PlusCircle size={16} className="mr-2" />
+                New Course
+              </Button>
+            </Link>
+            <Link href="/admin/exams/new">
+              <Button variant="primary" className="flex items-center">
+                <PlusCircle size={16} className="mr-2" />
+                New Exam
+              </Button>
+            </Link>
+          </div>
         }
       />
 

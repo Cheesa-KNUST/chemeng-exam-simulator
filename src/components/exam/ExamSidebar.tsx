@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Flag, CheckCircle2, Circle, AlertCircle } from "lucide-react";
+import { Flag, CheckCircle2, Circle, AlertCircle, Loader2 } from "lucide-react";
 
 type FilterTab = "all" | "flagged" | "unanswered";
 
@@ -14,6 +14,7 @@ type Props = {
   onSubmit: () => void;
   onToggleFlag: (index: number) => void;
   disabled?: boolean;
+  submitting?: boolean;
 };
 
 export default function ExamSidebar({
@@ -25,6 +26,7 @@ export default function ExamSidebar({
   onSubmit,
   onToggleFlag,
   disabled = false,
+  submitting = false,
 }: Props) {
   const [filter, setFilter] = useState<FilterTab>("all");
 
@@ -197,14 +199,21 @@ export default function ExamSidebar({
       <div className="px-5 pb-5 pt-3 border-t border-slate-100 dark:border-slate-800">
         <button
           onClick={onSubmit}
-          disabled={disabled}
-          className={`w-full py-2.5 rounded-xl text-sm font-semibold transition shadow-sm ${
-            disabled
+          disabled={disabled || submitting}
+          className={`w-full py-2.5 rounded-xl text-sm font-semibold transition shadow-sm flex items-center justify-center gap-2 ${
+            disabled || submitting
               ? "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none"
               : "bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-blue-500/20"
           }`}
         >
-          Submit Exam
+          {submitting ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Submitting...
+            </>
+          ) : (
+            "Submit Exam"
+          )}
         </button>
         {flaggedCount > 0 && !disabled && (
           <p className="text-[11px] text-amber-500 dark:text-amber-400 text-center mt-2 flex items-center justify-center gap-1">

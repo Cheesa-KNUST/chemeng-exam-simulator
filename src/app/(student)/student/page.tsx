@@ -18,6 +18,7 @@ import ScoreDistributionChart from "@/components/charts/ScoreDistributionChart";
 import ActivityChart from "@/components/charts/ActivityChart";
 
 import Skeleton from "@/components/ui/Skeleton";
+import DailyChallengeSection from "@/components/dailychallenge/DailyChallengeSection";
 
 export default function HomePage() {
   const {
@@ -51,6 +52,10 @@ export default function HomePage() {
           {error}
         </div>
       )}
+
+      <div className="mb-6">
+        <DailyChallengeSection />
+      </div>
 
       <SectionTitle
         title="Performance Health"

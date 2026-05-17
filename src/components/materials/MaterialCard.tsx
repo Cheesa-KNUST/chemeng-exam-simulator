@@ -190,69 +190,77 @@ export default function MaterialCard({
         )}
       </div>
 
-      <div className="px-4 py-3 border-t border-slate-100 dark:border-slate-700 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-3 text-xs text-slate-400 dark:text-slate-500">
-          <span className="flex items-center gap-1">
-            <Clock size={11} />
-            {formattedDate}
-          </span>
-          <span className="flex items-center gap-1">
-            {material.fileType === "video" ? (
-              <Eye size={11} />
-            ) : (
-              <Download size={11} />
-            )}
-            {material.downloadCount}
-          </span>
+      <div className="px-4 py-3 border-t border-slate-100 dark:border-slate-700 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400 dark:text-slate-500">
+            <span className="flex items-center gap-1">
+              <Clock size={11} />
+              {formattedDate}
+            </span>
+
+            <span className="flex items-center gap-1">
+              {material.fileType === "video" ? (
+                <Eye size={11} />
+              ) : (
+                <Download size={11} />
+              )}
+              {material.downloadCount}
+            </span>
+          </div>
+
           {isAdmin && (
-            <span className="text-[11px] truncate max-w-35">
+            <span className="text-[11px] text-slate-400 dark:text-slate-500 truncate">
               Uploaded by {material.uploaderName}
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex flex-wrap items-center gap-2">
           {isAdmin ? (
             <>
               {material.status === "pending" && (
                 <>
                   <button
                     onClick={() => onApprove?.(material)}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800/50 transition-colors"
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800/50 transition-colors"
                   >
                     <CheckCircle2 size={12} />
                     Approve
                   </button>
+
                   <button
                     onClick={() => onReject?.(material)}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-800/50 transition-colors"
+                    className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-800/50 transition-colors"
                   >
                     <XCircle size={12} />
                     Reject
                   </button>
                 </>
               )}
+
               {material.status === "approved" && (
                 <button
                   onClick={() => onReject?.(material)}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 transition-colors"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 transition-colors"
                 >
                   <XCircle size={12} />
                   Unpublish
                 </button>
               )}
+
               {material.status === "rejected" && (
                 <button
                   onClick={() => onApprove?.(material)}
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 transition-colors"
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 transition-colors"
                 >
                   <CheckCircle2 size={12} />
                   Re-approve
                 </button>
               )}
+
               <button
                 onClick={() => onDelete?.(material)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 border border-transparent hover:border-red-200 dark:hover:border-red-800/50 transition-colors"
+                className="p-2 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 border border-transparent hover:border-red-200 dark:hover:border-red-800/50 transition-colors"
               >
                 <Trash2 size={14} />
               </button>
@@ -264,11 +272,13 @@ export default function MaterialCard({
             >
               {material.fileType === "video" ? (
                 <>
-                  <ExternalLink size={12} /> Watch
+                  <ExternalLink size={12} />
+                  Watch
                 </>
               ) : (
                 <>
-                  <Download size={12} /> Download
+                  <Download size={12} />
+                  Download
                 </>
               )}
             </button>

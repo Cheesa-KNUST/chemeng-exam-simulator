@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { Menu, Bell, Sun, Moon } from "lucide-react";
 
+import StreakBadge from "../dailychallenge/StreakBadge";
+
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/useTheme";
 
@@ -54,13 +56,16 @@ export default function Navbar({ onMenuClick }: Props) {
 
       <div className="flex items-center gap-2 md:gap-3">
         {!isAdmin && (
-          <Link
-            href="/student/notifications"
-            className="relative p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-          >
-            <Bell size={20} strokeWidth={1.8} />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full" />
-          </Link>
+          <>
+            <StreakBadge />
+            <Link
+              href="/student/notifications"
+              className="relative p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            >
+              <Bell size={20} strokeWidth={1.8} />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full" />
+            </Link>
+          </>
         )}
 
         <button

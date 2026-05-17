@@ -7,7 +7,7 @@ import {
   Sparkles,
   DoorOpen,
   FileText,
-  PlusCircle,
+  Flame,
   Mail,
   LibraryBig,
   Upload,
@@ -71,9 +71,9 @@ export const adminNavItems = [
     icon: FileText,
   },
   {
-    label: "Create Exams",
-    href: "/admin/exams/new",
-    icon: PlusCircle,
+    label: "Daily Challenges",
+    href: "/admin/daily-challenge",
+    icon: Flame,
   },
   {
     label: "Materials Upload",

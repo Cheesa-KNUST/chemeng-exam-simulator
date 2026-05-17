@@ -213,7 +213,7 @@ export default function StudentSubmitModal({ onClose, onSuccess }: Props) {
 
           <input
             type="text"
-            placeholder="Course code (e.g. CHE 301) *"
+            placeholder="Course (e.g. Thermo 1) *"
             value={form.course}
             onChange={(e) => set("course", e.target.value)}
             className={INPUT_CLASS}
