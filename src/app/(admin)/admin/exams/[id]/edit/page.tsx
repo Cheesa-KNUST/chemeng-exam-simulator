@@ -39,6 +39,8 @@ export default function EditExamPage() {
           duration: data.duration,
           difficulty: data.difficulty,
           type: data.type,
+          level: data.level,
+          semester: data.semester,
           questions: data.questions,
         });
       } catch {
