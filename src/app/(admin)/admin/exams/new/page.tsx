@@ -16,9 +16,11 @@ const emptyDraft = (): ExamDraft => ({
   id: "",
   courseSlug: "",
   title: "",
-  duration: 30,
+  duration: 0,
   difficulty: "Easy",
-  type: "MCQ's",
+  type: "",
+  level: 100,
+  semester: 1,
   questions: [],
 });
 
