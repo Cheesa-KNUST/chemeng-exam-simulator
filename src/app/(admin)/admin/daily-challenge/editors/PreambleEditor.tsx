@@ -39,8 +39,9 @@ export default function PreambleEditor({ initial, onSave, onCancel }: Props) {
     onSave({
       id: initial?.id ?? "",
       kind: "preamble",
+      groupId: initial?.groupId ?? crypto.randomUUID(),
       content: content.trim(),
-      image: image.trim() || undefined,
+      image: image?.trim() || undefined,
     });
   };
 
